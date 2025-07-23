@@ -8,36 +8,32 @@
 import MapKit
 import SwiftUI
 
-// On itial load a pin will be at the user location
-// user can drag the map to change the pin location
-// Big button to press save the parking location called "Pakred Here"
-
 struct ParkingMapView: View {
     @ObservedObject private var locationManager = LocationManager.shared
 
     @State private var userPosition: MapCameraPosition = .userLocation(followsHeading: true, fallback: .automatic)
 
-    @State private var test: MapCameraPosition = .region(
-        .init(
-            center: .init(latitude: 37.3346, longitude: -122.0090),
-            latitudinalMeters: 1300,
-            longitudinalMeters: 1300
-        )
-    )
-
     var body: some View {
         ZStack(alignment: .bottom) {
             Map(position: $userPosition) {
                 UserAnnotation()
+                
+                Annotation("Apple Visitor Center", coordinate: Constants.appleVisitorCetnerCoordinates, anchor: .center) {
+                    Image(systemName: "car.fill")
+                        .resizable()
+                        .scaledToFit()
+                        .foregroundStyle(.white)
+                        .frame(width: 20, height: 20)
+                        .padding(8)
+                        .background(.indigo.gradient, in: .circle)
+                        .glassEffect()
+                }
             }
             .overlay {
                 Image(systemName: "mappin")
                     .font(.largeTitle)
                     .foregroundColor(.red)
                     .offset(y: -15)
-            }
-            .mapControls {
-                MapUserLocationButton()
             }
             .onAppear {
                 locationManager.requestAuthorization()
@@ -54,7 +50,7 @@ struct ParkingMapView: View {
                 .buttonStyle(.glassProminent)
                 .controlSize(.extraLarge)
             }
-            .padding()
+            .padding(.horizontal)
         }
     }
 
@@ -66,12 +62,6 @@ struct ParkingMapView: View {
             return update?.location?.coordinate
         } catch {
             return nil
-        }
-    }
-
-    func setUserPosition() {
-        Task {
-            guard let userCoordinates = getUserCoordinates() else { return }
         }
     }
 }
