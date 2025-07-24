@@ -9,6 +9,8 @@ import MapKit
 import SwiftUI
 
 struct ParkingMapView: View {
+    @Environment(\.dismiss) private var dismiss
+
     @ObservedObject private var locationManager = LocationManager.shared
 
     @State private var userPosition: MapCameraPosition = .userLocation(followsHeading: true, fallback: .automatic)
@@ -17,6 +19,8 @@ struct ParkingMapView: View {
     @Namespace private var namespace
 
     @State private var toastOpacity: Double = 0
+
+    @State private var isPresentedInfo: Bool = false
 
     var body: some View {
         NavigationStack {
@@ -66,7 +70,7 @@ struct ParkingMapView: View {
                                     withAnimation {
                                         isParkingSpotSaved.toggle()
                                     }
-                                    
+
                                     Task {
                                         withAnimation(.bouncy) {
                                             toastOpacity = 1.0
@@ -103,7 +107,7 @@ struct ParkingMapView: View {
                                 .controlSize(.extraLarge)
 
                                 Button {
-                                    //
+                                    isPresentedInfo = true
                                 } label: {
                                     Label("Parking Spot Details", systemImage: "info")
                                         .font(.title2)
@@ -116,6 +120,20 @@ struct ParkingMapView: View {
                         }
                         .padding(.horizontal)
                     }
+                }
+            }
+            .sheet(isPresented: $isPresentedInfo) {
+                NavigationStack {
+                    Text("Addtional Parking spot goes here")
+                        .toolbar {
+                            ToolbarItem(placement: .cancellationAction) {
+                                Button {
+                                    dismiss()
+                                } label: {
+                                    Label("Close info", systemImage: "xmark")
+                                }
+                            }
+                        }
                 }
             }
             .toolbar {
