@@ -9,44 +9,71 @@ import SwiftData
 import SwiftUI
 
 struct CarListView: View {
+    @Environment(\.dismiss) private var dismiss
+
+    @Binding var selectedCarTracking: Car
+
     @Query(sort: \Car.name)
     private var cars: [Car]
 
     @State private var isPresentedCarForm: Bool = false
-    @State private var selectedCar: Car? = nil
+    @State private var selectedCarInfo: Car? = nil
 
     var body: some View {
         NavigationStack {
-            List {
-                ForEach(cars) { car in
-                    Button {
-                        selectedCar = car
-                    } label: {
-                        HStack(spacing: 8) {
-                            Image(systemName: car.icon)
-                                .foregroundColor(PickerColors.getUIColor(color: car.color))
-
-                            Text(car.name)
-
-                            Spacer()
-
-                            Image(systemName: "info.circle")
-                                .foregroundStyle(.secondary)
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .contentShape(.rect)
+            Group {
+                if cars.count <= 0 {
+                    CarListEmptyView {
+                        isPresentedCarForm = true
                     }
-                    .buttonStyle(.plain)
+                } else {
+                    List {
+                        ForEach(cars) { car in
+                            HStack {
+                                Button {
+                                    selectedCarTracking = car
+                                    dismiss()
+                                } label: {
+                                    HStack(spacing: 8) {
+                                        Image(systemName: car.icon)
+                                            .foregroundColor(PickerColors.getUIColor(color: car.color))
+
+                                        Text(car.name)
+                                    }
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .contentShape(.rect)
+                                }
+                                .buttonStyle(.plain)
+
+                                Button {
+                                    selectedCarInfo = car
+                                } label: {
+                                    Label("Car information", systemImage: "info.circle")
+                                        .labelStyle(.iconOnly)
+                                        .foregroundStyle(.secondary)
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                    }
                 }
             }
             .navigationTitle("Your Cars")
             .sheet(isPresented: $isPresentedCarForm) {
                 CarFormView()
             }
-            .sheet(item: $selectedCar) { car in
+            .sheet(item: $selectedCarInfo) { car in
                 CarFormView(car: car)
             }
             .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button {
+                        dismiss()
+                    } label: {
+                        Label("Close Car list", systemImage: "xmark")
+                    }
+                }
+
                 ToolbarItem(placement: .primaryAction) {
                     Button {
                         isPresentedCarForm = true
@@ -55,11 +82,13 @@ struct CarListView: View {
                     }
                 }
             }
+            .onAppear {}
         }
     }
 }
 
 #Preview {
-    CarListView()
+    let newCar = Car()
+    CarListView(selectedCarTracking: .constant(newCar))
         .modelContainer(for: Car.self, inMemory: true)
 }

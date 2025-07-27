@@ -6,21 +6,34 @@
 //
 
 import MapKit
+import SwiftData
 import SwiftUI
 
 struct ParkingMapView: View {
-    @Environment(\.dismiss) private var dismiss
-
-    @ObservedObject private var locationManager = LocationManager.shared
-
-    @State private var userPosition: MapCameraPosition = .userLocation(followsHeading: true, fallback: .automatic)
-
     @State private var isParkingSpotSaved: Bool = false
     @Namespace private var namespace
 
     @State private var toastOpacity: Double = 0
 
     @State private var isPresentedInfo: Bool = false
+
+    var pinColor: Color = .blue // Color of the teardrop shape
+    var iconColor: Color = .white // Color of the SF Symbol inside
+    var pinSize: CGSize = .init(width: 40, height: 60) // Size of the entire pin base
+
+    // MARK: refactorin
+
+    @Environment(\.dismiss) private var dismiss
+
+    @ObservedObject private var locationManager = LocationManager.shared
+
+    @Query(sort: \Car.name)
+    private var cars: [Car]
+
+    @State private var userPosition: MapCameraPosition = .userLocation(followsHeading: true, fallback: .automatic)
+
+    @State private var isShowingCarList: Bool = false
+    @State private var selectedCar: Car = .init()
 
     var body: some View {
         NavigationStack {
@@ -43,10 +56,13 @@ struct ParkingMapView: View {
                 }
                 .overlay {
                     if !isParkingSpotSaved {
-                        Image(systemName: "mappin")
-                            .font(.largeTitle)
-                            .foregroundColor(.red)
-                            .offset(y: -15)
+                        Label("Car Icon", systemImage: selectedCar.icon)
+                            .labelStyle(.iconOnly)
+                            .fontWeight(.bold)
+                            .foregroundColor(.white)
+                            .padding(10)
+                            .background(PickerColors(rawValue: selectedCar.color)?.uiColor ?? .red)
+                            .clipShape(Circle())
                     }
                 }
                 .onAppear {
@@ -122,6 +138,17 @@ struct ParkingMapView: View {
                     }
                 }
             }
+            .navigationTitle(selectedCar.name)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button {
+                        isShowingCarList = true
+                    } label: {
+                        Label("Car List", systemImage: "car.2")
+                    }
+                }
+            }
             .sheet(isPresented: $isPresentedInfo) {
                 NavigationStack {
                     Text("Addtional Parking spot goes here")
@@ -136,9 +163,14 @@ struct ParkingMapView: View {
                         }
                 }
             }
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Label("Back", systemImage: "chevron.left")
+            .sheet(isPresented: $isShowingCarList) {
+                CarListView(selectedCarTracking: $selectedCar)
+            }
+            .onAppear {
+                if cars.count <= 0 {
+                    isShowingCarList = true
+                } else {
+                    selectedCar = cars.first!
                 }
             }
         }
@@ -158,4 +190,5 @@ struct ParkingMapView: View {
 
 #Preview {
     ParkingMapView()
+        .modelContainer(for: Car.self, inMemory: true)
 }
