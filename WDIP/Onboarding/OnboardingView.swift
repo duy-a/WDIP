@@ -17,14 +17,14 @@ struct OnboardingView: View {
                 OnboardingPageView(
                     emoji: "👋",
                     title: "Where Did I Park?",
-                    subtitle: "Never lose your car again. Track your parking spots with just one tap."
+                    subtitle: "Never lose your vehicle again. Track your parking spots with just one tap."
                 )
                 .tag(1)
 
                 OnboardingPageView(
                     emoji: "📍",
                     title: "One-Tap Parking Save",
-                    subtitle: "No typing required. Get guided straight back to your car."
+                    subtitle: "No typing required. Get guided straight back to your vehicle."
                 )
                 .tag(2)
 
@@ -45,7 +45,7 @@ struct OnboardingView: View {
                 OnboardingPageView(
                     emoji: "🛰️",
                     title: "Location Permission",
-                    subtitle: "To get started, we need your location access to save and guide you back to your car.",
+                    subtitle: "To get started, we need your location access to save and guide you back to your vehicle.",
                     actionName: "Get Started"
                 ) {
                     //

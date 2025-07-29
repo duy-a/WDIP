@@ -1,5 +1,5 @@
 //
-//  CarListView.swift
+//  VehicleListView.swift
 //  WDIP
 //
 //  Created by Duy Anh Ngac on 23/7/25.
@@ -8,37 +8,37 @@
 import SwiftData
 import SwiftUI
 
-struct CarListView: View {
+struct VehicleListView: View {
     @Environment(\.dismiss) private var dismiss
 
-    @Binding var selectedCarTracking: Car
+    @Binding var selectedVehicleTracking: Vehicle
 
-    @Query(sort: \Car.name)
-    private var cars: [Car]
+    @Query(sort: \Vehicle.name)
+    private var vehicle: [Vehicle]
 
-    @State private var isPresentedCarForm: Bool = false
-    @State private var selectedCarInfo: Car? = nil
+    @State private var isPresentedVehicleForm: Bool = false
+    @State private var selectedVehicleInfo: Vehicle? = nil
 
     var body: some View {
         NavigationStack {
             Group {
-                if cars.count <= 0 {
-                    CarListEmptyView {
-                        isPresentedCarForm = true
+                if vehicle.count <= 0 {
+                    VehicleListEmptyView {
+                        isPresentedVehicleForm = true
                     }
                 } else {
                     List {
-                        ForEach(cars) { car in
+                        ForEach(vehicle) { vehicle in
                             HStack {
                                 Button {
-                                    selectedCarTracking = car
+                                    selectedVehicleTracking = vehicle
                                     dismiss()
                                 } label: {
                                     HStack(spacing: 8) {
-                                        Image(systemName: car.icon)
-                                            .foregroundColor(PickerColors.getUIColor(color: car.color))
+                                        Image(systemName: vehicle.icon)
+                                            .foregroundColor(PickerColors.getUIColor(color: vehicle.color))
 
-                                        Text(car.name)
+                                        Text(vehicle.name)
                                     }
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                     .contentShape(.rect)
@@ -46,9 +46,9 @@ struct CarListView: View {
                                 .buttonStyle(.plain)
 
                                 Button {
-                                    selectedCarInfo = car
+                                    selectedVehicleInfo = vehicle
                                 } label: {
-                                    Label("Car information", systemImage: "info.circle")
+                                    Label("Vehicle information", systemImage: "info.circle")
                                         .labelStyle(.iconOnly)
                                         .foregroundStyle(.secondary)
                                 }
@@ -58,27 +58,27 @@ struct CarListView: View {
                     }
                 }
             }
-            .navigationTitle("Your Cars")
-            .sheet(isPresented: $isPresentedCarForm) {
-                CarFormView()
+            .navigationTitle("Your Vehicle")
+            .sheet(isPresented: $isPresentedVehicleForm) {
+                VehicleFormView()
             }
-            .sheet(item: $selectedCarInfo) { car in
-                CarFormView(car: car)
+            .sheet(item: $selectedVehicleInfo) { vehicle in
+                VehicleFormView(vehicle: vehicle)
             }
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button {
                         dismiss()
                     } label: {
-                        Label("Close Car list", systemImage: "xmark")
+                        Label("Close vehicle list", systemImage: "xmark")
                     }
                 }
 
                 ToolbarItem(placement: .primaryAction) {
                     Button {
-                        isPresentedCarForm = true
+                        isPresentedVehicleForm = true
                     } label: {
-                        Label("Add new car", systemImage: "plus")
+                        Label("Add new vehicle", systemImage: "plus")
                     }
                 }
             }
@@ -88,7 +88,6 @@ struct CarListView: View {
 }
 
 #Preview {
-    let newCar = Car()
-    CarListView(selectedCarTracking: .constant(newCar))
-        .modelContainer(for: Car.self, inMemory: true)
+    VehicleListView(selectedVehicleTracking: .constant(Vehicle()))
+        .modelContainer(for: Vehicle.self, inMemory: true)
 }

@@ -1,5 +1,5 @@
 //
-//  CarFormView.swift
+//  VehicleFormView.swift
 //  WDIP
 //
 //  Created by Duy Anh Ngac on 23/7/25.
@@ -8,22 +8,22 @@
 import SwiftData
 import SwiftUI
 
-struct CarFormView: View {
+struct VehicleFormView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
 
-    var car: Car? = nil
+    var vehicle: Vehicle? = nil
 
     @State private var name: String = ""
     @State private var icon: String = "car"
     @State private var iconColor: PickerColors = .red
 
-    init(car: Car? = nil) {
-        if let car {
-            self.car = car
-            self._name = State(wrappedValue: car.name)
-            self._icon = State(wrappedValue: car.icon)
-            self._iconColor = State(wrappedValue: PickerColors(rawValue: car.color)!)
+    init(vehicle: Vehicle? = nil) {
+        if let vehicle {
+            self.vehicle = vehicle
+            self._name = State(wrappedValue: vehicle.name)
+            self._icon = State(wrappedValue: vehicle.icon)
+            self._iconColor = State(wrappedValue: PickerColors(rawValue: vehicle.color)!)
         }
     }
 
@@ -31,7 +31,7 @@ struct CarFormView: View {
         NavigationStack {
             Form {
                 Section {
-                    Label("Car Icon", systemImage: icon)
+                    Label("Vehicle Icon", systemImage: icon)
                         .labelStyle(.iconOnly)
                         .frame(width: 60, height: 60)
                         .font(.largeTitle)
@@ -61,7 +61,7 @@ struct CarFormView: View {
                     IconPicker(selectedIcon: $icon)
                 }
 
-                if car != nil {
+                if vehicle != nil {
                     Section {
                         Button(role: .destructive) {
                             delete()
@@ -97,30 +97,30 @@ struct CarFormView: View {
     }
 
     func save() {
-        if let car {
-            car.name = name
-            car.icon = icon
-            car.color = iconColor.rawValue
+        if let vehicle {
+            vehicle.name = name
+            vehicle.icon = icon
+            vehicle.color = iconColor.rawValue
         } else {
-            let newCar = Car(name: name, icon: icon, color: iconColor.rawValue)
-            newCar.name = name
-            newCar.icon = icon
-            newCar.color = iconColor.rawValue
+            let vehicle = Vehicle(name: name, icon: icon, color: iconColor.rawValue)
+            vehicle.name = name
+            vehicle.icon = icon
+            vehicle.color = iconColor.rawValue
 
-            modelContext.insert(newCar)
+            modelContext.insert(vehicle)
         }
 
         dismiss()
     }
 
     func delete() {
-        modelContext.delete(car!)
+        modelContext.delete(vehicle!)
         dismiss()
     }
     
 }
 
 #Preview {
-    CarFormView()
-        .modelContainer(for: Car.self, inMemory: true)
+    VehicleFormView()
+        .modelContainer(for: Vehicle.self, inMemory: true)
 }

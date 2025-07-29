@@ -1,5 +1,5 @@
 //
-//  CarListEmptyView.swift
+//  VehicleListEmptyView.swift
 //  WDIP
 //
 //  Created by Duy Anh Ngac on 27/7/25.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct CarListEmptyView: View {
+struct VehicleListEmptyView: View {
     
     var buttonAction: () -> Void
     
@@ -15,7 +15,7 @@ struct CarListEmptyView: View {
         VStack(spacing: 20) {
             Spacer()
             
-            Label("Car Icon", systemImage: "car.badge.gearshape")
+            Label("Vehicle Icon", systemImage: "car.badge.gearshape")
                 .labelStyle(.iconOnly)
                 .frame(width: 80, height: 80)
                 .font(.largeTitle)
@@ -35,7 +35,7 @@ struct CarListEmptyView: View {
             Button {
                 buttonAction()
             } label: {
-                Label("Add new car", systemImage: "car")
+                Label("Add new vehicle", systemImage: "car")
                     .font(.title2)
                     .frame(maxWidth: .infinity)
             }
@@ -49,7 +49,7 @@ struct CarListEmptyView: View {
 }
 
 #Preview {
-    CarListEmptyView {
+    VehicleListEmptyView {
         //
     }
 }

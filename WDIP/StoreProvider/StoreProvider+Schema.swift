@@ -10,7 +10,7 @@ import SwiftData
 
 extension StoreProvider {
     static let schema = Schema([
-        Car.self,
+        Vehicle.self,
         ParkingSpot.self
     ])
 }

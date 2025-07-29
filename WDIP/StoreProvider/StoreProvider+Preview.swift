@@ -14,15 +14,15 @@ extension StoreProvider {
         
         let modelContainer = storeProvider.modelContainer
         
-        modelContainer.mainContext.insert(sampleCar)
+        modelContainer.mainContext.insert(sampleVehicle)
         
         return storeProvider.modelContainer
     }()
 }
 
 extension StoreProvider {
-    static let sampleCar = Car(
-        name: "Car #\(Int.random(in: 1...10))",
+    static let sampleVehicle = Vehicle(
+        name: "Vehicle #\(Int.random(in: 1...10))",
         icon: PickerIcons.allCases.randomElement()!.rawValue,
         color: PickerColors.allCases.randomElement()!.rawValue
     )

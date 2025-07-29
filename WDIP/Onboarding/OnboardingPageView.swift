@@ -48,7 +48,7 @@ struct OnboardingPageView: View {
 }
 
 #Preview {
-    OnboardingPageView(emoji: "🔐", title: "Where Did I Park?", subtitle: "Never lose your car again. Track your parking spots with just one tap.", actionName: "Get Started") {
+    OnboardingPageView(emoji: "🔐", title: "Where Did I Park?", subtitle: "Never lose your vehicle again. Track your parking spots with just one tap.", actionName: "Get Started") {
         // Some action
     }
 }

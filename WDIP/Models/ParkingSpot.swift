@@ -16,13 +16,14 @@ final class ParkingSpot {
     var notes: String
     var photo: Data?
     
-    var car: Car?
+    var vehicle: Vehicle?
     
-    init(latitude: Double, longitude: Double, parkingDate: Date = .now, notes: String = "", photo: Data? = nil) {
+    init(latitude: Double, longitude: Double, parkingDate: Date = .now, notes: String = "", photo: Data? = nil, vehicle: Vehicle? = nil) {
         self.latitude = latitude
         self.longitude = longitude
         self.parkingDate = parkingDate
         self.notes = notes
         self.photo = photo
+        self.vehicle = vehicle
     }
 }
