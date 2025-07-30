@@ -22,7 +22,11 @@ struct ParkingMapView: View {
     @Query(sort: \Vehicle.name)
     private var vehicles: [Vehicle]
 
-    @State private var userPosition: MapCameraPosition = .userLocation(followsHeading: true, fallback: .automatic)
+    @State private var mapCenterPosition: MapCameraPosition = .userLocation(followsHeading: true, fallback: .automatic)
+    @State private var mapCenterCoordintates: CLLocationCoordinate2D? = nil
+
+    @State private var old: String = ""
+    @State private var new: String = ""
 
     @State private var isShowingVehicleList: Bool = false
     @State private var isShowingParkingSpotInfo: Bool = false
@@ -31,19 +35,14 @@ struct ParkingMapView: View {
     var body: some View {
         NavigationStack {
             ZStack(alignment: .bottom) {
-                Map(position: $userPosition) {
+                Map(position: $mapCenterPosition) {
                     UserAnnotation()
 
                     if isParkingSpotSaved {
-                        Annotation("Apple Visitor Center", coordinate: Constants.appleVisitorCetnerCoordinates, anchor: .center) {
-                            Image(systemName: "car.fill")
-                                .resizable()
-                                .scaledToFit()
-                                .foregroundStyle(.white)
-                                .frame(width: 20, height: 20)
-                                .padding(8)
-                                .background(.indigo.gradient, in: .circle)
-                                .glassEffect()
+                        Annotation("Parking Spot", coordinate: mapCenterCoordintates!, anchor: .center) {
+                            ParkingSpotLabel(
+                                icon: PickerIcons(rawValue: selectedVehicle.icon) ?? .car,
+                                color: PickerColors(rawValue: selectedVehicle.color) ?? .red)
                         }
                     }
                 }
@@ -52,6 +51,11 @@ struct ParkingMapView: View {
                         ParkingSpotLabel(
                             icon: PickerIcons(rawValue: selectedVehicle.icon) ?? .car,
                             color: PickerColors(rawValue: selectedVehicle.color) ?? .red)
+                    }
+                }
+                .onMapCameraChange {
+                    if !isParkingSpotSaved {
+                        mapCenterCoordintates = $0.camera.centerCoordinate
                     }
                 }
                 .onAppear {
