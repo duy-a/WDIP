@@ -44,7 +44,7 @@ struct ParkingMapView: View {
                     UserAnnotation()
 
                     if selectedVehicle.isParked {
-                        Annotation("Parking Spot",
+                        Annotation("\(selectedVehicle.name) parked here",
                                    coordinate: currentParkingSpotCoordinates!,
                                    anchor: .center)
                         {
