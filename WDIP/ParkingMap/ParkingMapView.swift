@@ -10,27 +10,32 @@ import SwiftData
 import SwiftUI
 
 struct ParkingMapView: View {
-    @State private var isParkingSpotSaved: Bool = false
-    @Namespace private var namespace
-
-    // MARK: refactorin
-
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
 
     @ObservedObject private var locationManager = LocationManager.shared
 
     @Query(sort: \Vehicle.name)
     private var vehicles: [Vehicle]
 
+    @Namespace private var namespace
+
+    @State private var selectedVehicle: Vehicle = .init()
+
     @State private var mapCenterPosition: MapCameraPosition = .userLocation(followsHeading: true, fallback: .automatic)
     @State private var mapCenterCoordintates: CLLocationCoordinate2D? = nil
 
-    @State private var old: String = ""
-    @State private var new: String = ""
-
     @State private var isShowingVehicleList: Bool = false
     @State private var isShowingParkingSpotInfo: Bool = false
-    @State private var selectedVehicle: Vehicle = .init()
+    @State private var isShowingParkingSpotsHistory: Bool = false
+
+    var currentParkingSpotCoordinates: CLLocationCoordinate2D? {
+        guard let currentParkingSpot = selectedVehicle.currentParkingSpot else { return nil }
+
+        return CLLocationCoordinate2D(
+            latitude: currentParkingSpot.latitude,
+            longitude: currentParkingSpot.longitude)
+    }
 
     var body: some View {
         NavigationStack {
@@ -38,8 +43,11 @@ struct ParkingMapView: View {
                 Map(position: $mapCenterPosition) {
                     UserAnnotation()
 
-                    if isParkingSpotSaved {
-                        Annotation("Parking Spot", coordinate: mapCenterCoordintates!, anchor: .center) {
+                    if selectedVehicle.isParked {
+                        Annotation("Parking Spot",
+                                   coordinate: currentParkingSpotCoordinates!,
+                                   anchor: .center)
+                        {
                             ParkingSpotLabel(
                                 icon: PickerIcons(rawValue: selectedVehicle.icon) ?? .car,
                                 color: PickerColors(rawValue: selectedVehicle.color) ?? .red)
@@ -47,16 +55,14 @@ struct ParkingMapView: View {
                     }
                 }
                 .overlay {
-                    if !isParkingSpotSaved {
+                    if !selectedVehicle.isParked {
                         ParkingSpotLabel(
                             icon: PickerIcons(rawValue: selectedVehicle.icon) ?? .car,
                             color: PickerColors(rawValue: selectedVehicle.color) ?? .red)
                     }
                 }
                 .onMapCameraChange {
-                    if !isParkingSpotSaved {
-                        mapCenterCoordintates = $0.camera.centerCoordinate
-                    }
+                    mapCenterCoordintates = $0.camera.centerCoordinate
                 }
                 .onAppear {
                     locationManager.requestAuthorization()
@@ -74,12 +80,23 @@ struct ParkingMapView: View {
                         Label("Vehicle List", systemImage: "car.2")
                     }
                 }
+
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        isShowingParkingSpotsHistory = true
+                    } label: {
+                        Label("Parking Spots History", systemImage: "parkingsign")
+                    }
+                }
             }
             .sheet(isPresented: $isShowingParkingSpotInfo) {
                 ParkingSpotInfoView()
             }
             .sheet(isPresented: $isShowingVehicleList) {
                 VehicleListView(selectedVehicleTracking: $selectedVehicle)
+            }
+            .sheet(isPresented: $isShowingParkingSpotsHistory) {
+                ParkingSpotListView()
             }
             .onAppear {
                 if vehicles.count <= 0 {
@@ -91,15 +108,25 @@ struct ParkingMapView: View {
         }
     }
 
-    func getUserCoordinates() async -> CLLocationCoordinate2D? {
-        let updates = CLLocationUpdate.liveUpdates()
+    func parkVehicleAtParkingSpot() {
+        guard let mapCenterCoordintates else { return }
 
-        do {
-            let update = try await updates.first { $0.location?.coordinate != nil }
-            return update?.location?.coordinate
-        } catch {
-            return nil
-        }
+        selectedVehicle.isParked = true
+
+        let newParkingSpot = ParkingSpot()
+        newParkingSpot.latitude = mapCenterCoordintates.latitude
+        newParkingSpot.longitude = mapCenterCoordintates.longitude
+        newParkingSpot.vehicle = selectedVehicle
+
+        modelContext.insert(newParkingSpot)
+    }
+
+    func getDirections() {
+        //
+    }
+
+    func removeVehicleFromParkingSpot() {
+        selectedVehicle.isParked = false
     }
 }
 
@@ -112,9 +139,22 @@ extension ParkingMapView {
     var actionButtons: some View {
         GlassEffectContainer(spacing: 30) {
             HStack(spacing: 30) {
+                if selectedVehicle.isParked {
+                    Button {
+                        isShowingParkingSpotInfo = true
+                    } label: {
+                        Label("Get directions", systemImage: "paperplane.fill")
+                            .font(.title2)
+                            .labelStyle(.iconOnly)
+                    }
+                    .buttonStyle(.glass)
+                    .controlSize(.extraLarge)
+                    .glassEffectID("directoins", in: namespace)
+                }
+
                 Button {
                     withAnimation {
-                        isParkingSpotSaved.toggle()
+                        selectedVehicle.isParked ? removeVehicleFromParkingSpot() : parkVehicleAtParkingSpot()
                     }
                 } label: {
                     Label("Park Here", systemImage: selectedVehicle.icon)
@@ -124,8 +164,9 @@ extension ParkingMapView {
                 .buttonStyle(.glassProminent)
                 .controlSize(.extraLarge)
                 .glassEffectID("park", in: namespace)
+                .tint(PickerColors(rawValue: selectedVehicle.color)?.uiColor ?? .primary)
 
-                if isParkingSpotSaved {
+                if selectedVehicle.isParked {
                     Button {
                         isShowingParkingSpotInfo = true
                     } label: {

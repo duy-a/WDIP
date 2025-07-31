@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftData
+import CoreLocation
 
 extension StoreProvider {
     static var previewModelContainer: ModelContainer = {
@@ -14,7 +15,9 @@ extension StoreProvider {
         
         let modelContainer = storeProvider.modelContainer
         
-        modelContainer.mainContext.insert(sampleVehicle)
+        sampleParkingSpot.vehicle = sampleVehicle
+        
+        modelContainer.mainContext.insert(sampleParkingSpot)
         
         return storeProvider.modelContainer
     }()
@@ -25,5 +28,10 @@ extension StoreProvider {
         name: "Vehicle #\(Int.random(in: 1...10))",
         icon: PickerIcons.allCases.randomElement()!.rawValue,
         color: PickerColors.allCases.randomElement()!.rawValue
+    )
+    
+    static let sampleParkingSpot = ParkingSpot(
+        latitude: Constants.appleParkCoordinates.latitude,
+        longitude: Constants.appleParkCoordinates.longitude
     )
 }

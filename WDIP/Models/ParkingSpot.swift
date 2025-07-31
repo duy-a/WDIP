@@ -18,7 +18,7 @@ final class ParkingSpot {
     
     var vehicle: Vehicle?
     
-    init(latitude: Double, longitude: Double, parkingDate: Date = .now, notes: String = "", photo: Data? = nil, vehicle: Vehicle? = nil) {
+    init(latitude: Double = 0, longitude: Double = 0, parkingDate: Date = .now, notes: String = "", photo: Data? = nil, vehicle: Vehicle? = nil) {
         self.latitude = latitude
         self.longitude = longitude
         self.parkingDate = parkingDate
