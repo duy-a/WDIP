@@ -14,14 +14,20 @@ struct ParkingSpotListView: View {
     @Query(sort: \ParkingSpot.parkingDate)
     private var parkingSpots: [ParkingSpot]
     
+    @State private var selectedParkingSpot: ParkingSpot? = nil
+    @State private var isShowingParkingSpotInfo: Bool = false
+    
     var body: some View {
         NavigationStack {
             List {
-                ForEach(parkingSpots) { spot in
-                    Text(.now, format: .dateTime)
+                ForEach(parkingSpots) { parkingSpot in
+                    Button {
+                        selectedParkingSpot = parkingSpot
+                    } label: {
+                        Text(.now, format: .dateTime)
+                    }
+                    .buttonStyle(.plain)
                 }
-                
-                Text("When press on location, it will move the map there")
             }
             .navigationTitle("Parking Spots History")
             .navigationBarTitleDisplayMode(.inline)
@@ -33,6 +39,9 @@ struct ParkingSpotListView: View {
                         Label("Close List" ,systemImage: "xmark")
                     }
                 }
+            }
+            .sheet(item: $selectedParkingSpot) { parkingSpot in
+                ParkingSpotInfoView(parkingSpot: parkingSpot)
             }
         }
     }

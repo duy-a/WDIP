@@ -90,7 +90,7 @@ struct ParkingMapView: View {
                 }
             }
             .sheet(isPresented: $isShowingParkingSpotInfo) {
-                ParkingSpotInfoView()
+                ParkingSpotInfoView(parkingSpot: selectedVehicle.currentParkingSpot!)
             }
             .sheet(isPresented: $isShowingVehicleList) {
                 VehicleListView(selectedVehicleTracking: $selectedVehicle)
@@ -157,7 +157,7 @@ extension ParkingMapView {
                         selectedVehicle.isParked ? removeVehicleFromParkingSpot() : parkVehicleAtParkingSpot()
                     }
                 } label: {
-                    Label("Park Here", systemImage: selectedVehicle.icon)
+                    Label(selectedVehicle.isParked ? "Got it" : "Park Here", systemImage: selectedVehicle.icon)
                         .font(.title2)
                         .frame(maxWidth: .infinity)
                 }
