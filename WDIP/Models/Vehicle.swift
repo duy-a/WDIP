@@ -30,7 +30,7 @@ final class Vehicle {
         guard let parkingSpots else { return nil }
 
         if isParked {
-            return parkingSpots.sorted { $0.parkingDate > $1.parkingDate }.first
+            return parkingSpots.sorted { $0.parkingStartTime > $1.parkingStartTime }.first
         }
 
         return nil

@@ -15,7 +15,6 @@ final class ParkingSpot {
     var latitude: Double
     var longitude: Double
     var address: String = ""
-    var parkingDate: Date = Date.now
     var parkingStartTime: Date = Date.now
     var parkingEndTime: Date = Date.now
     var notes: String = ""
@@ -59,5 +58,30 @@ final class ParkingSpot {
         } catch {
             // TODO: catch error
         }
+    }
+
+    var parkingDuration: String {
+        let calendar = Calendar.current
+        let startTime: Date = parkingStartTime
+        var endTime: Date = parkingEndTime
+
+        if isCurrentParkingSpot {
+            endTime = .now
+        }
+
+        var totalMinutes = calendar.dateComponents([.minute], from: endTime, to: startTime).minute ?? 0
+        totalMinutes += 1
+
+        if totalMinutes < 60 {
+            return "\(totalMinutes) minute" + (totalMinutes == 1 ? "" : "s")
+        }
+
+        let totalHours = totalMinutes / 60
+        if totalHours < 24 {
+            return "\(totalHours) hour" + (totalHours == 1 ? "" : "s")
+        }
+
+        let totalDays = totalHours / 24 // Or totalMinutes / (60 * 24)
+        return "\(totalDays) day" + (totalDays == 1 ? "" : "s")
     }
 }

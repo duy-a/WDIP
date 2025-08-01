@@ -35,15 +35,28 @@ struct ParkingSpotInfoView: View {
                         Marker("Parking Spot", coordinate: pinParkingSpotCoordinates)
                             .tint(.red)
                     }
-                    .disabled(false)
+                    .disabled(true)
                     .mapControlVisibility(.hidden)
-                    .frame(height: 250)
-                    
+                    .frame(height: 225)
+
                     Text(parkingSpot.address)
                 }
                 .listRowSeparator(.hidden)
 
-                Section {
+                Section("Parking time - \(parkingSpot.parkingDuration)") {
+                    Label {
+                        Text(parkingSpot.parkingStartTime, format: .dateTime)
+                    } icon: {
+                        Image(systemName: "clock")
+                    }
+                    Label {
+                        Text(parkingSpot.parkingEndTime, format: .dateTime)
+                    } icon: {
+                        Image(systemName: "clock.badge")
+                    }
+                }
+
+                Section("Notes") {
                     TextField("Notes", text: $parkingSpot.notes, axis: .vertical)
                 }
 
@@ -86,5 +99,5 @@ struct ParkingSpotInfoView: View {
 }
 
 #Preview {
-    ParkingSpotInfoView(parkingSpot: StoreProvider.sampleParkingSpot)
+    ParkingSpotInfoView(parkingSpot: StoreProvider.sampleParkingSpot1)
 }

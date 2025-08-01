@@ -15,9 +15,18 @@ extension StoreProvider {
         
         let modelContainer = storeProvider.modelContainer
         
-        sampleParkingSpot.vehicle = sampleVehicle
+        sampleParkingSpot1.parkingEndTime = Calendar.current.date(byAdding: .minute, value: -30, to: .now)!
+        sampleParkingSpot1.vehicle = sampleVehicle
         
-        modelContainer.mainContext.insert(sampleParkingSpot)
+        sampleParkingSpot2.parkingEndTime = Calendar.current.date(byAdding: .hour, value: -2, to: .now)!
+        sampleParkingSpot2.vehicle = sampleVehicle
+        
+        sampleParkingSpot3.parkingEndTime = Calendar.current.date(byAdding: .day, value: -5, to: .now)!
+        sampleParkingSpot3.vehicle = sampleVehicle
+        
+        modelContainer.mainContext.insert(sampleParkingSpot1)
+        modelContainer.mainContext.insert(sampleParkingSpot2)
+        modelContainer.mainContext.insert(sampleParkingSpot3)
         
         return storeProvider.modelContainer
     }()
@@ -30,8 +39,18 @@ extension StoreProvider {
         color: PickerColors.allCases.randomElement()!.rawValue
     )
     
-    static let sampleParkingSpot = ParkingSpot(
+    static let sampleParkingSpot1 = ParkingSpot(
         latitude: Constants.appleParkCoordinates.latitude,
-        longitude: Constants.appleParkCoordinates.longitude
+        longitude: Constants.appleParkCoordinates.longitude,
+    )
+    
+    static let sampleParkingSpot2 = ParkingSpot(
+        latitude: Constants.appleVisitorCetnerCoordinates.latitude,
+        longitude: Constants.appleVisitorCetnerCoordinates.longitude,
+    )
+    
+    static let sampleParkingSpot3 = ParkingSpot(
+        latitude: 0,
+        longitude: 0,
     )
 }

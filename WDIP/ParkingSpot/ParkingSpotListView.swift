@@ -12,7 +12,7 @@ import SwiftUI
 struct ParkingSpotListView: View {
     @Environment(\.dismiss) private var dismiss
 
-    @Query(sort: \ParkingSpot.parkingDate, order: .reverse)
+    @Query(sort: \ParkingSpot.parkingStartTime, order: .reverse)
     private var parkingSpots: [ParkingSpot]
 
     @State private var selectedParkingSpot: ParkingSpot? = nil
@@ -27,12 +27,21 @@ struct ParkingSpotListView: View {
                     } label: {
                         HStack {
                             VStack(alignment: .leading, spacing: 10) {
-                                HStack {
+                                HStack(spacing: 2) {
                                     Text(parkingSpot.parkingStartTime, format: .dateTime)
-                                    Text("-")
-                                    Text(parkingSpot.parkingEndTime, format: .dateTime)
+                                    
 
-                                    Spacer()
+                                    if !parkingSpot.isCurrentParkingSpot {
+                                        Text("-")
+                                        Text(parkingSpot.parkingEndTime, format: .dateTime)
+
+                                        Spacer()
+
+                                        Text(parkingSpot.parkingDuration)
+                                    } else {
+                                        Spacer()
+                                        Text("Parked here")
+                                    }
                                 }
 
                                 .font(.subheadline)
