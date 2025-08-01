@@ -5,18 +5,19 @@
 //  Created by Duy Anh Ngac on 31/7/25.
 //
 
-import SwiftUI
+import MapKit
 import SwiftData
+import SwiftUI
 
 struct ParkingSpotListView: View {
     @Environment(\.dismiss) private var dismiss
-    
-    @Query(sort: \ParkingSpot.parkingDate)
+
+    @Query(sort: \ParkingSpot.parkingDate, order: .reverse)
     private var parkingSpots: [ParkingSpot]
-    
+
     @State private var selectedParkingSpot: ParkingSpot? = nil
     @State private var isShowingParkingSpotInfo: Bool = false
-    
+
     var body: some View {
         NavigationStack {
             List {
@@ -24,7 +25,30 @@ struct ParkingSpotListView: View {
                     Button {
                         selectedParkingSpot = parkingSpot
                     } label: {
-                        Text(.now, format: .dateTime)
+                        HStack {
+                            VStack(alignment: .leading, spacing: 10) {
+                                HStack {
+                                    Text(parkingSpot.parkingStartTime, format: .dateTime)
+                                    Text("-")
+                                    Text(parkingSpot.parkingEndTime, format: .dateTime)
+
+                                    Spacer()
+                                }
+
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                                .italic()
+
+                                Text(parkingSpot.address)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                            }
+
+                            Spacer()
+
+                            Label("Parking Spot Info", systemImage: "chevron.right")
+                                .labelStyle(.iconOnly)
+                                .foregroundStyle(.secondary)
+                        }
                     }
                     .buttonStyle(.plain)
                 }
@@ -36,7 +60,7 @@ struct ParkingSpotListView: View {
                     Button {
                         dismiss()
                     } label: {
-                        Label("Close List" ,systemImage: "xmark")
+                        Label("Close List", systemImage: "xmark")
                     }
                 }
             }

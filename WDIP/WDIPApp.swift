@@ -12,7 +12,7 @@ import SwiftUI
 struct WDIPApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ParkingMapView()
         }
         .modelContainer(StoreProvider.shared.modelContainer)
     }

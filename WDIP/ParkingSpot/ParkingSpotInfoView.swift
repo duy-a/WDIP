@@ -26,16 +26,6 @@ struct ParkingSpotInfoView: View {
     var pinParkingSpotCoordinates: CLLocationCoordinate2D {
         CLLocationCoordinate2D(latitude: parkingSpot.latitude, longitude: parkingSpot.longitude)
     }
-    
-    var isCurrentParkingSpot: Bool {
-        guard let vehicle = parkingSpot.vehicle else { return false }
-        
-        if parkingSpot == vehicle.currentParkingSpot {
-            return true
-        }
-        
-        return false
-    }
 
     var body: some View {
         NavigationStack {
@@ -48,13 +38,16 @@ struct ParkingSpotInfoView: View {
                     .disabled(false)
                     .mapControlVisibility(.hidden)
                     .frame(height: 250)
+                    
+                    Text(parkingSpot.address)
                 }
+                .listRowSeparator(.hidden)
 
                 Section {
                     TextField("Notes", text: $parkingSpot.notes, axis: .vertical)
                 }
 
-                if !isCurrentParkingSpot {
+                if !parkingSpot.isCurrentParkingSpot {
                     Section {
                         Button {
                             delete()
