@@ -26,19 +26,23 @@ struct ParkingSpotListView: View {
                         selectedParkingSpot = parkingSpot
                     } label: {
                         HStack {
-                            VStack(alignment: .leading, spacing: 10) {
+                            if parkingSpot.vehicle != nil {
+                                let vehicle = parkingSpot.vehicle!
+
+                                ParkingSpotLabel(icon: PickerIcons(rawValue: vehicle.icon)!, color: PickerColors(rawValue: vehicle.color)!)
+                            } else {
+                                Label("Parking sign", systemImage: "parkingsign.square.fill")
+                                    .labelStyle(.iconOnly)
+                                    .foregroundStyle(.blue)
+                            }
+
+                            Spacer()
+
+                            VStack(alignment: .leading, spacing: 5) {
                                 HStack(spacing: 2) {
-                                    Text(parkingSpot.parkingStartTime, format: .dateTime)
-                                    
+                                    Text(parkingSpot.parkingStartTime, format: .dateTime.day().month().year())
 
-                                    if !parkingSpot.isCurrentParkingSpot {
-                                        Text("-")
-                                        Text(parkingSpot.parkingEndTime, format: .dateTime)
-
-                                        Spacer()
-
-                                        Text(parkingSpot.parkingDuration)
-                                    } else {
+                                    if parkingSpot.isCurrentParkingSpot {
                                         Spacer()
                                         Text("Parked here")
                                     }
