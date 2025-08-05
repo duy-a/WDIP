@@ -142,9 +142,21 @@ extension ParkingMapView {
             HStack(spacing: 30) {
                 if selectedVehicle.isParked {
                     Button {
-                        isShowingParkingSpotInfo = true
+                        Task {
+                            guard let parkingSpot = selectedVehicle.currentParkingSpot else { return }
+                            guard let mkAddress = await parkingSpot.getMKAdress() else { return }
+                            let location = CLLocation(latitude: parkingSpot.latitude, longitude: parkingSpot.longitude)
+
+                            let destinationMapItem = MKMapItem(location: location, address: mkAddress)
+                            destinationMapItem.name = selectedVehicle.name
+
+                            let launchOptions = [MKLaunchOptionsDirectionsModeKey: MKLaunchOptionsDirectionsModeDriving]
+
+                            destinationMapItem.openInMaps(launchOptions: launchOptions)
+                        }
+
                     } label: {
-                        Label("Get directions", systemImage: "paperplane.fill")
+                        Label("Get directions", systemImage: "arrow.turn.left.up")
                             .font(.title2)
                             .labelStyle(.iconOnly)
                     }

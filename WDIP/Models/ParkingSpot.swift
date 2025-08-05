@@ -59,6 +59,23 @@ final class ParkingSpot {
             // TODO: catch error
         }
     }
+    
+    func getMKAdress() async -> MKAddress? {
+        let location = CLLocation(latitude: latitude, longitude: longitude)
+
+        do {
+            guard let request = MKReverseGeocodingRequest(location: location) else { return nil }
+
+            let mapItems = try await request.mapItems
+
+            guard let mapItem = mapItems.first else { return nil }
+            
+            return mapItem.address
+        } catch {
+            // TODO: catch error
+            return nil
+        }
+    }
 
     var parkingDuration: String {
         let calendar = Calendar.current
