@@ -121,8 +121,19 @@ struct ParkingMapView: View {
         modelContext.insert(newParkingSpot)
     }
 
-    func getDirections() {
-        //
+    func getDirectionsInMaps() {
+        Task {
+            guard let parkingSpot = selectedVehicle.currentParkingSpot else { return }
+            guard let mkAddress = await parkingSpot.getMKAdress() else { return }
+            let location = CLLocation(latitude: parkingSpot.latitude, longitude: parkingSpot.longitude)
+
+            let destinationMapItem = MKMapItem(location: location, address: mkAddress)
+            destinationMapItem.name = selectedVehicle.name
+
+            let launchOptions = [MKLaunchOptionsDirectionsModeKey: MKLaunchOptionsDirectionsModeDriving]
+
+            destinationMapItem.openInMaps(launchOptions: launchOptions)
+        }
     }
 
     func removeVehicleFromParkingSpot() {
@@ -142,19 +153,7 @@ extension ParkingMapView {
             HStack(spacing: 30) {
                 if selectedVehicle.isParked {
                     Button {
-                        Task {
-                            guard let parkingSpot = selectedVehicle.currentParkingSpot else { return }
-                            guard let mkAddress = await parkingSpot.getMKAdress() else { return }
-                            let location = CLLocation(latitude: parkingSpot.latitude, longitude: parkingSpot.longitude)
-
-                            let destinationMapItem = MKMapItem(location: location, address: mkAddress)
-                            destinationMapItem.name = selectedVehicle.name
-
-                            let launchOptions = [MKLaunchOptionsDirectionsModeKey: MKLaunchOptionsDirectionsModeDriving]
-
-                            destinationMapItem.openInMaps(launchOptions: launchOptions)
-                        }
-
+                        getDirectionsInMaps()
                     } label: {
                         Label("Get directions", systemImage: "arrow.turn.left.up")
                             .font(.title2)
@@ -162,6 +161,7 @@ extension ParkingMapView {
                     }
                     .buttonStyle(.glass)
                     .controlSize(.extraLarge)
+                    .buttonBorderShape(.circle)
                     .glassEffectID("directoins", in: namespace)
                 }
 
@@ -189,6 +189,7 @@ extension ParkingMapView {
                     }
                     .buttonStyle(.glass)
                     .controlSize(.extraLarge)
+                    .buttonBorderShape(.circle)
                     .glassEffectID("info", in: namespace)
                 }
             }
