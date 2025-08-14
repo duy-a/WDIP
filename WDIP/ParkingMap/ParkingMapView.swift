@@ -44,14 +44,16 @@ struct ParkingMapView: View {
                     UserAnnotation()
 
                     if selectedVehicle.isParked {
-                        Annotation("\(selectedVehicle.name) parked here",
-                                   coordinate: currentParkingSpotCoordinates!,
-                                   anchor: .center)
-                        {
-                            ParkingSpotLabel(
-                                icon: PickerIcons(rawValue: selectedVehicle.icon) ?? .car,
-                                color: PickerColors(rawValue: selectedVehicle.color) ?? .red)
-                        }
+                        Marker(selectedVehicle.name, systemImage: selectedVehicle.icon, coordinate: currentParkingSpotCoordinates!)
+                            .tint(PickerColors(rawValue: selectedVehicle.color)?.uiColor ?? .red)
+//                        Annotation("\(selectedVehicle.name) parked here",
+//                                   coordinate: currentParkingSpotCoordinates!,
+//                                   anchor: .center)
+//                        {
+//                            ParkingSpotLabel(
+//                                icon: PickerIcons(rawValue: selectedVehicle.icon) ?? .car,
+//                                color: PickerColors(rawValue: selectedVehicle.color) ?? .red)
+//                        }
                     }
                 }
                 .overlay {
