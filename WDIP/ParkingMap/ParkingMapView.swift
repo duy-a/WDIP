@@ -46,15 +46,10 @@ struct ParkingMapView: View {
                     if selectedVehicle.isParked {
                         Marker(selectedVehicle.name, systemImage: selectedVehicle.icon, coordinate: currentParkingSpotCoordinates!)
                             .tint(PickerColors(rawValue: selectedVehicle.color)?.uiColor ?? .red)
-//                        Annotation("\(selectedVehicle.name) parked here",
-//                                   coordinate: currentParkingSpotCoordinates!,
-//                                   anchor: .center)
-//                        {
-//                            ParkingSpotLabel(
-//                                icon: PickerIcons(rawValue: selectedVehicle.icon) ?? .car,
-//                                color: PickerColors(rawValue: selectedVehicle.color) ?? .red)
-//                        }
                     }
+                }
+                .mapControls {
+                    MapUserLocationButton()
                 }
                 .overlay {
                     if !selectedVehicle.isParked {
@@ -123,6 +118,13 @@ struct ParkingMapView: View {
         modelContext.insert(newParkingSpot)
     }
 
+    func centerOnParkedSpot() {
+        guard let currentParkingSpotCoordinates else { return }
+        withAnimation {
+            mapCenterPosition = .camera(MapCamera(centerCoordinate: currentParkingSpotCoordinates, distance: 5000))
+        }
+    }
+
     func getDirectionsInMaps() {
         Task {
             guard let parkingSpot = selectedVehicle.currentParkingSpot else { return }
@@ -152,19 +154,33 @@ struct ParkingMapView: View {
 extension ParkingMapView {
     var actionButtons: some View {
         GlassEffectContainer(spacing: 30) {
-            HStack(spacing: 30) {
+            HStack(alignment: .bottom, spacing: 30) {
                 if selectedVehicle.isParked {
-                    Button {
-                        getDirectionsInMaps()
-                    } label: {
-                        Label("Get directions", systemImage: "arrow.turn.left.up")
-                            .font(.title2)
-                            .labelStyle(.iconOnly)
+                    VStack(spacing: 30) {
+                        Button {
+                            centerOnParkedSpot()
+                        } label: {
+                            Label("Parked Location", systemImage: "parkingsign.square")
+                                .font(.title2)
+                                .labelStyle(.iconOnly)
+                        }
+                        .buttonStyle(.glass)
+                        .controlSize(.extraLarge)
+                        .buttonBorderShape(.circle)
+                        .glassEffectID("directions", in: namespace)
+
+                        Button {
+                            getDirectionsInMaps()
+                        } label: {
+                            Label("Get directions", systemImage: "arrow.turn.left.up")
+                                .font(.title2)
+                                .labelStyle(.iconOnly)
+                        }
+                        .buttonStyle(.glass)
+                        .controlSize(.extraLarge)
+                        .buttonBorderShape(.circle)
+                        .glassEffectID("parkedLocation", in: namespace)
                     }
-                    .buttonStyle(.glass)
-                    .controlSize(.extraLarge)
-                    .buttonBorderShape(.circle)
-                    .glassEffectID("directoins", in: namespace)
                 }
 
                 Button {
