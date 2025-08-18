@@ -160,7 +160,7 @@ extension ParkingMapView {
                         Button {
                             centerOnParkedSpot()
                         } label: {
-                            Label("Parked Location", systemImage: "parkingsign.square")
+                            Label("Parked Location", systemImage: selectedVehicle.icon)
                                 .font(.title2)
                                 .labelStyle(.iconOnly)
                         }
@@ -188,9 +188,10 @@ extension ParkingMapView {
                         selectedVehicle.isParked ? removeVehicleFromParkingSpot() : parkVehicleAtParkingSpot()
                     }
                 } label: {
-                    Label(selectedVehicle.isParked ? "Got it" : "Park Here", systemImage: selectedVehicle.icon)
+                    Text(selectedVehicle.isParked ? "Got it" : "Park Here")
                         .font(.title2)
                         .frame(maxWidth: .infinity)
+//                    Label(selectedVehicle.isParked ? "Got it" : "Park Here", systemImage: selectedVehicle.icon)
                 }
                 .buttonStyle(.glassProminent)
                 .controlSize(.extraLarge)
