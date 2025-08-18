@@ -23,8 +23,21 @@ struct VehicleListView: View {
         NavigationStack {
             Group {
                 if vehicle.count <= 0 {
-                    VehicleListEmptyView {
-                        isPresentedVehicleForm = true
+                    ContentUnavailableView {
+                        Label("Vehicle Icon", systemImage: "car.badge.gearshape")
+                    } description: {
+                        Text("We need at least 1 vehicle to track. Add a new vehicle now by pressing a button below")
+                            .multilineTextAlignment(.center)
+                    } actions: {
+                        Button {
+                            isPresentedVehicleForm = true
+                        } label: {
+                            Label("Add new vehicle", systemImage: "car")
+                                .font(.title2)
+                                .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.glassProminent)
+                        .controlSize(.extraLarge)
                     }
                 } else {
                     List {
