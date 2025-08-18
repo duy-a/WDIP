@@ -15,8 +15,12 @@ struct ParkingSpotListView: View {
     @Query(sort: \ParkingSpot.parkingStartTime, order: .reverse)
     private var parkingSpots: [ParkingSpot]
 
+    @Binding var mapCameraPosition: MapCameraPosition
+
     @State private var selectedParkingSpot: ParkingSpot? = nil
     @State private var isShowingParkingSpotInfo: Bool = false
+
+    @State private var callToDismiss: Bool = false
 
     var body: some View {
         NavigationStack {
@@ -78,13 +82,17 @@ struct ParkingSpotListView: View {
                 }
             }
             .sheet(item: $selectedParkingSpot) { parkingSpot in
-                ParkingSpotInfoView(parkingSpot: parkingSpot)
+                ParkingSpotInfoView(parkingSpot: parkingSpot, mapCameraPosition: $mapCameraPosition) {
+                    dismiss()
+                }
             }
         }
     }
 }
 
 #Preview {
-    ParkingSpotListView()
+    let mapCenterPosition: MapCameraPosition = .userLocation(followsHeading: true, fallback: .automatic)
+
+    ParkingSpotListView(mapCameraPosition: .constant(mapCenterPosition),)
         .modelContainer(StoreProvider.previewModelContainer)
 }

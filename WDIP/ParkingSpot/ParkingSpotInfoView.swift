@@ -14,6 +14,9 @@ struct ParkingSpotInfoView: View {
     @Environment(\.modelContext) private var modelContext
 
     @Bindable var parkingSpot: ParkingSpot
+    @Binding var mapCameraPosition: MapCameraPosition
+    
+    var onDismiss: (() -> Void)? = nil
 
     @State private var notes: String = ""
     @State private var photo: Data? = nil
@@ -88,16 +91,54 @@ struct ParkingSpotInfoView: View {
                         Label("Close information", systemImage: "xmark")
                     }
                 }
+
+                ToolbarItem {
+                    Button(action: showOnMap) {
+                        Label("Show on map", systemImage: "map")
+                    }
+                }
+
+                ToolbarSpacer(.fixed)
+
+                ToolbarItem {
+                    Button(action: getDirectionsInMaps) {
+                        Label("Get Directions", systemImage: "arrow.turn.left.up")
+                    }
+                }
             }
         }
     }
-
+    
     func delete() {
         modelContext.delete(parkingSpot)
         dismiss()
     }
+
+    func showOnMap() {
+        withAnimation {
+            
+            mapCameraPosition = .camera(MapCamera(centerCoordinate: parkingSpot.coordinates, distance: 5000))
+            guard let onDismiss else { return }
+            onDismiss()
+        }
+    }
+
+    func getDirectionsInMaps() {
+        Task {
+            guard let mkAddress = await parkingSpot.getMKAdress() else { return }
+            let location = CLLocation(latitude: parkingSpot.latitude, longitude: parkingSpot.longitude)
+
+            let destinationMapItem = MKMapItem(location: location, address: mkAddress)
+
+            let launchOptions = [MKLaunchOptionsDirectionsModeKey: MKLaunchOptionsDirectionsModeDriving]
+
+            destinationMapItem.openInMaps(launchOptions: launchOptions)
+        }
+    }
 }
 
 #Preview {
-    ParkingSpotInfoView(parkingSpot: StoreProvider.sampleParkingSpot1)
+    let mapCenterPosition: MapCameraPosition = .userLocation(followsHeading: true, fallback: .automatic)
+    
+    ParkingSpotInfoView(parkingSpot: StoreProvider.sampleParkingSpot1, mapCameraPosition: .constant(mapCenterPosition))
 }

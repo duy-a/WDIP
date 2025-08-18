@@ -41,6 +41,10 @@ final class ParkingSpot {
         return false
     }
 
+    var coordinates: CLLocationCoordinate2D {
+        CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
+    }
+
     private func getAddress() async {
         let location = CLLocation(latitude: latitude, longitude: longitude)
 
@@ -59,7 +63,7 @@ final class ParkingSpot {
             // TODO: catch error
         }
     }
-    
+
     func getMKAdress() async -> MKAddress? {
         let location = CLLocation(latitude: latitude, longitude: longitude)
 
@@ -69,7 +73,7 @@ final class ParkingSpot {
             let mapItems = try await request.mapItems
 
             guard let mapItem = mapItems.first else { return nil }
-            
+
             return mapItem.address
         } catch {
             // TODO: catch error
