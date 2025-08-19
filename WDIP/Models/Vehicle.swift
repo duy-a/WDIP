@@ -11,10 +11,10 @@ import SwiftUI
 
 @Model
 final class Vehicle {
-    var name: String
-    var icon: String
-    var color: String
-    var isParked: Bool
+    var name: String = ""
+    var icon: String = ""
+    var color: String = ""
+    var isParked: Bool = false
 
     @Relationship(deleteRule: .cascade, inverse: \ParkingSpot.vehicle)
     var parkingSpots: [ParkingSpot]?
