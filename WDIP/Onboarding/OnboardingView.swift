@@ -48,7 +48,7 @@ struct OnboardingView: View {
                     subtitle: "To get started, we need your location access to save and guide you back to your vehicle.",
                     actionName: "Get Started"
                 ) {
-                    //
+                    UserDefaults.standard.set(true, forKey: "isViewedOnboarding")
                 }
                 .tag(5)
             }

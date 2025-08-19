@@ -141,8 +141,8 @@ struct ParkingMapView: View {
     }
 
     func removeVehicleFromParkingSpot() {
-        selectedVehicle.isParked = false
         selectedVehicle.currentParkingSpot?.parkingEndTime = .now
+        selectedVehicle.isParked = false
     }
 }
 

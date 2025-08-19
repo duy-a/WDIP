@@ -15,13 +15,13 @@ extension StoreProvider {
         
         let modelContainer = storeProvider.modelContainer
         
-        sampleParkingSpot1.parkingEndTime = Calendar.current.date(byAdding: .minute, value: -30, to: .now)!
+        sampleParkingSpot1.parkingEndTime = Calendar.current.date(byAdding: .minute, value: 30, to: .now)!
         sampleParkingSpot1.vehicle = sampleVehicle
         
-        sampleParkingSpot2.parkingEndTime = Calendar.current.date(byAdding: .hour, value: -2, to: .now)!
+        sampleParkingSpot2.parkingEndTime = Calendar.current.date(byAdding: .hour, value: 2, to: .now)!
         sampleParkingSpot2.vehicle = sampleVehicle
         
-        sampleParkingSpot3.parkingEndTime = Calendar.current.date(byAdding: .day, value: -5, to: .now)!
+        sampleParkingSpot3.parkingEndTime = Calendar.current.date(byAdding: .day, value: 5, to: .now)!
         sampleParkingSpot3.vehicle = sampleVehicle
         
         modelContainer.mainContext.insert(sampleParkingSpot1)

@@ -10,9 +10,15 @@ import SwiftUI
 
 @main
 struct WDIPApp: App {
+    @AppStorage("isViewedOnboarding") private var isViewedOnboarding: Bool = false
+
     var body: some Scene {
         WindowGroup {
-            ParkingMapView()
+            if isViewedOnboarding {
+                ParkingMapView()
+            } else {
+                OnboardingView()
+            }
         }
         .modelContainer(StoreProvider.shared.modelContainer)
     }

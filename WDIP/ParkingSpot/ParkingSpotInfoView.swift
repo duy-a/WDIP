@@ -52,8 +52,13 @@ struct ParkingSpotInfoView: View {
                     } icon: {
                         Image(systemName: "clock")
                     }
+                    
                     Label {
-                        Text(parkingSpot.parkingEndTime, format: .dateTime)
+                        if parkingSpot.isCurrentParkingSpot {
+                            Text("Parked Here")
+                        } else {
+                            Text(parkingSpot.parkingEndTime, format: .dateTime)
+                        }
                     } icon: {
                         Image(systemName: "clock.badge")
                     }
@@ -78,7 +83,7 @@ struct ParkingSpotInfoView: View {
                     }
                 }
             }
-            .presentationDetents([.medium])
+//            .presentationDetents([.medium, .large])
             .navigationTitle("Parking Spot Info")
             .navigationBarTitleDisplayMode(.inline)
             .onAppear {

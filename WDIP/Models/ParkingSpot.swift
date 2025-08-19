@@ -84,13 +84,13 @@ final class ParkingSpot {
     var parkingDuration: String {
         let calendar = Calendar.current
         let startTime: Date = parkingStartTime
-        var endTime: Date = parkingEndTime
+        var endTime: Date = isCurrentParkingSpot ? .now : parkingEndTime
 
         if isCurrentParkingSpot {
             endTime = .now
         }
 
-        var totalMinutes = calendar.dateComponents([.minute], from: endTime, to: startTime).minute ?? 0
+        var totalMinutes = calendar.dateComponents([.minute], from: startTime, to: endTime).minute ?? 0
         totalMinutes += 1
 
         if totalMinutes < 60 {
