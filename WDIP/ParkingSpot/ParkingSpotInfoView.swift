@@ -78,6 +78,7 @@ struct ParkingSpotInfoView: View {
                     }
                 }
             }
+            .presentationDetents([.medium])
             .navigationTitle("Parking Spot Info")
             .navigationBarTitleDisplayMode(.inline)
             .onAppear {
