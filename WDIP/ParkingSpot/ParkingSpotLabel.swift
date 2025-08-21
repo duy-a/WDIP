@@ -10,7 +10,7 @@ import SwiftUI
 struct ParkingSpotLabel: View {
     
     var icon: PickerIcons = .car
-    var color: PickerColors = .red
+    var color: PickerColor = .red
     
     var body: some View {
         Label("Vehicle Icon", systemImage: icon.rawValue)
@@ -18,7 +18,7 @@ struct ParkingSpotLabel: View {
             .fontWeight(.bold)
             .foregroundColor(.white)
             .padding(10)
-            .background(color.uiColor)
+            .background(color.color)
             .clipShape(Circle())
     }
 }

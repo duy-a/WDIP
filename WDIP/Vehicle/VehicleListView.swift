@@ -49,7 +49,7 @@ struct VehicleListView: View {
                                 } label: {
                                     HStack(spacing: 8) {
                                         Image(systemName: vehicle.icon)
-                                            .foregroundColor(PickerColors.getUIColor(color: vehicle.color))
+                                            .foregroundColor(PickerColor.color(from: vehicle.color))
 
                                         Text(vehicle.name)
                                     }

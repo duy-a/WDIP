@@ -33,7 +33,7 @@ struct ParkingSpotListView: View {
                             if parkingSpot.vehicle != nil {
                                 let vehicle = parkingSpot.vehicle!
 
-                                ParkingSpotLabel(icon: PickerIcons(rawValue: vehicle.icon)!, color: PickerColors(rawValue: vehicle.color)!)
+                                ParkingSpotLabel(icon: PickerIcons(rawValue: vehicle.icon)!, color: PickerColor(rawValue: vehicle.color)!)
                             } else {
                                 Label("Parking sign", systemImage: "parkingsign.square.fill")
                                     .labelStyle(.iconOnly)

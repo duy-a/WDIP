@@ -23,16 +23,16 @@ final class Vehicle {
         self.name = name
         self.icon = icon
         self.color = color
-        self.isParked = false
+        self.isParked = isParked
+    }
+
+    var uiColor: Color {
+        PickerColor.color(from: color)
     }
 
     var currentParkingSpot: ParkingSpot? {
         guard let parkingSpots else { return nil }
 
-        if isParked {
-            return parkingSpots.sorted { $0.parkingStartTime > $1.parkingStartTime }.first
-        }
-
-        return nil
+        return parkingSpots.max { $0.parkingStartTime > $1.parkingStartTime }
     }
 }

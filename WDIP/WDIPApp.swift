@@ -14,11 +14,12 @@ struct WDIPApp: App {
 
     var body: some Scene {
         WindowGroup {
-            if isViewedOnboarding {
-                ParkingMapView()
-            } else {
-                OnboardingView()
-            }
+//            if isViewedOnboarding {
+//                ParkingMapView()
+//            } else {
+//                OnboardingView()
+//            }
+            ParkingMap()
         }
         .modelContainer(StoreProvider.shared.modelContainer)
     }

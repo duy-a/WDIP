@@ -16,14 +16,14 @@ struct VehicleFormView: View {
 
     @State private var name: String = ""
     @State private var icon: String = "car"
-    @State private var iconColor: PickerColors = .red
+    @State private var iconColor: PickerColor = .red
 
     init(vehicle: Vehicle? = nil) {
         if let vehicle {
             self.vehicle = vehicle
             self._name = State(wrappedValue: vehicle.name)
             self._icon = State(wrappedValue: vehicle.icon)
-            self._iconColor = State(wrappedValue: PickerColors(rawValue: vehicle.color)!)
+            self._iconColor = State(wrappedValue: PickerColor(rawValue: vehicle.color)!)
         }
     }
 
@@ -37,7 +37,7 @@ struct VehicleFormView: View {
                         .font(.largeTitle)
                         .foregroundColor(.white)
                         .padding(15)
-                        .background(iconColor.uiColor)
+                        .background(iconColor.color)
                         .clipShape(Circle())
                         .frame(maxWidth: .infinity, alignment: .center)
 
@@ -46,7 +46,7 @@ struct VehicleFormView: View {
                         .padding(7)
                         .fontWeight(.semibold)
                         .background(.gray.opacity(0.15))
-                        .foregroundStyle(iconColor.uiColor)
+                        .foregroundStyle(iconColor.color)
                         .cornerRadius(12)
                         .multilineTextAlignment(.center)
                         .padding(.top, -15)

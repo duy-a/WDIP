@@ -8,13 +8,13 @@
 import SwiftUI
 
 struct ColorPicker: View {
-    @Binding var selectedColor: PickerColors
+    @Binding var selectedColor: PickerColor
 
     let columns = Array(repeating: GridItem(.flexible()), count: 6)
 
     var body: some View {
         LazyVGrid(columns: self.columns, spacing: 10) {
-            ForEach(PickerColors.allCases) { color in
+            ForEach(PickerColor.allCases) { color in
                 Button {
                     withAnimation {
                         selectedColor = color
@@ -25,7 +25,7 @@ struct ColorPicker: View {
                     .labelStyle(.iconOnly)
                     .font(.largeTitle)
                     .frame(maxWidth: .infinity)
-                    .foregroundStyle(color.uiColor)
+                    .foregroundStyle(color.color)
                 }
                 .buttonStyle(.plain)
             }
@@ -41,12 +41,12 @@ struct ColorPicker: View {
     }
 }
 
-enum PickerColors: String, CaseIterable, Identifiable {
+enum PickerColor: String, CaseIterable, Identifiable {
     case red, orange, yellow, green, blue, indigo, purple, brown, cyan, mint, pink, teal
 
     var id: String { self.rawValue }
-
-    var uiColor: Color {
+    
+    var color: Color {
         switch self {
             case .red: return .red
             case .orange: return .orange
@@ -63,7 +63,7 @@ enum PickerColors: String, CaseIterable, Identifiable {
         }
     }
 
-    static func getUIColor(color: String) -> Color {
-        return PickerColors(rawValue: color)?.uiColor ?? .primary
+    static func color(from rawValue: String) -> Color {
+        return PickerColor(rawValue: rawValue)?.color ?? .primary
     }
 }

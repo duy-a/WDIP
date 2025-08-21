@@ -45,7 +45,7 @@ struct ParkingMapView: View {
 
                     if selectedVehicle.isParked {
                         Marker(selectedVehicle.name, systemImage: selectedVehicle.icon, coordinate: currentParkingSpotCoordinates!)
-                            .tint(PickerColors(rawValue: selectedVehicle.color)?.uiColor ?? .red)
+                            .tint(PickerColor(rawValue: selectedVehicle.color)?.color ?? .red)
                     }
                 }
                 .mapControls {
@@ -55,14 +55,14 @@ struct ParkingMapView: View {
                     if !selectedVehicle.isParked {
                         ParkingSpotLabel(
                             icon: PickerIcons(rawValue: selectedVehicle.icon) ?? .car,
-                            color: PickerColors(rawValue: selectedVehicle.color) ?? .red)
+                            color: PickerColor(rawValue: selectedVehicle.color) ?? .red)
                     }
                 }
                 .onMapCameraChange {
                     mapCenterCoordintates = $0.camera.centerCoordinate
                 }
                 .onAppear {
-                    locationManager.requestAuthorization()
+                    locationManager.requestWhenInUseAuthorization()
                 }
 
                 actionButtons
@@ -195,7 +195,7 @@ extension ParkingMapView {
                 .buttonStyle(.glassProminent)
                 .controlSize(.extraLarge)
                 .glassEffectID("park", in: namespace)
-                .tint(PickerColors(rawValue: selectedVehicle.color)?.uiColor ?? .primary)
+                .tint(PickerColor(rawValue: selectedVehicle.color)?.color ?? .primary)
 
                 if selectedVehicle.isParked {
                     Button {
