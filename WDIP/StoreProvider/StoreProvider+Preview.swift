@@ -35,13 +35,13 @@ extension StoreProvider {
 extension StoreProvider {
     static let sampleVehicle = Vehicle(
         name: "Vehicle #\(Int.random(in: 1...5))",
-        icon: PickerIcons.allCases.randomElement()!.rawValue,
+        icon: PickerIcon.allCases.randomElement()!.rawValue,
         color: PickerColor.allCases.randomElement()!.rawValue
     )
     
     static let sampleVehicle2 = Vehicle(
         name: "Vehicle #\(Int.random(in: 6...10))",
-        icon: PickerIcons.allCases.randomElement()!.rawValue,
+        icon: PickerIcon.allCases.randomElement()!.rawValue,
         color: PickerColor.allCases.randomElement()!.rawValue
     )
     

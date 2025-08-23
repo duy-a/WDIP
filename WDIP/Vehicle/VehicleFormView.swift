@@ -57,9 +57,9 @@ struct VehicleFormView: View {
                     ColorPicker(selectedColor: $iconColor)
                 }
 
-                Section {
-                    IconPicker(selectedIcon: $icon)
-                }
+//                Section {
+//                    IconPicker(selectedIcon: $icon)
+//                }
 
                 if vehicle != nil {
                     Section {

@@ -5,13 +5,12 @@
 //  Created by Duy Anh Ngac on 22/7/25.
 //
 
-import Combine
 import CoreLocation
-import Foundation
 
-final class LocationManager: NSObject, ObservableObject {
-    @Published private(set) var currentLocation: CLLocation?
-    @Published private(set) var authorizationStatus: CLAuthorizationStatus = .notDetermined
+@Observable
+final class LocationManager: NSObject {
+    private(set) var currentLocation: CLLocation?
+    private(set) var authorizationStatus: CLAuthorizationStatus = .notDetermined
 
     static let shared = LocationManager()
 

@@ -12,10 +12,11 @@ struct VehicleList: View {
     @Environment(\.dismiss) private var dismiss
 
     @Query(sort: \Vehicle.name) private var vehicles: [Vehicle]
-    
+
     @Binding var trackingVehicle: Vehicle
-    
-    @State private var isShowingVehicleForm: Bool = false
+
+    @State private var selectedVehicle: Vehicle? = nil
+    @State private var isShowingNewVehicleForm: Bool = false
 
     var body: some View {
         NavigationStack {
@@ -34,8 +35,11 @@ struct VehicleList: View {
                 .toolbar {
                     toolbarButtons()
                 }
-                .sheet(isPresented: $isShowingVehicleForm) {
-                    Text("VHHVHVHVHV")
+                .sheet(isPresented: $isShowingNewVehicleForm) {
+                    VehicleForm()
+                }
+                .sheet(item: $selectedVehicle) { vehicle in
+                    VehicleForm(vehicle: vehicle)
                 }
             }
         }
@@ -51,34 +55,26 @@ extension VehicleList {
     @ToolbarContentBuilder
     func toolbarButtons() -> some ToolbarContent {
         ToolbarItem(placement: .cancellationAction) {
-            Button {
-                dismiss()
-            } label: {
-                Label("Cancel", systemImage: "xmark")
-            }
+            Button("Cancel", systemImage: "xmark", action: { dismiss() })
         }
 
         ToolbarItem(placement: .primaryAction) {
-            Button {
-                addNewVehicle()
-            } label: {
-                Label("Add vehicle", systemImage: "plus")
-            }
+            Button("Add New Vehicle", systemImage: "plus", action: addNewVehicle)
         }
     }
 }
 
 extension VehicleList {
     private func addNewVehicle() {
-        isShowingVehicleForm = true
+        isShowingNewVehicleForm = true
     }
-    
+
     private func track(_ vehicle: Vehicle) {
         trackingVehicle = vehicle
         dismiss()
     }
-    
+
     private func showInfo(for vehicle: Vehicle) {
-        isShowingVehicleForm = true
+        selectedVehicle = vehicle
     }
 }

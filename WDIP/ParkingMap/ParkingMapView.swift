@@ -13,7 +13,7 @@ struct ParkingMapView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
 
-    @ObservedObject private var locationManager = LocationManager.shared
+    @State private var locationManager = LocationManager.shared
 
     @Query(sort: \Vehicle.name)
     private var vehicles: [Vehicle]
@@ -54,7 +54,7 @@ struct ParkingMapView: View {
                 .overlay {
                     if !selectedVehicle.isParked {
                         ParkingSpotLabel(
-                            icon: PickerIcons(rawValue: selectedVehicle.icon) ?? .car,
+                            icon: PickerIcon(rawValue: selectedVehicle.icon) ?? .car,
                             color: PickerColor(rawValue: selectedVehicle.color) ?? .red)
                     }
                 }

@@ -9,7 +9,7 @@ import SwiftUI
 
 struct ParkingSpotLabel: View {
     
-    var icon: PickerIcons = .car
+    var icon: PickerIcon = .car
     var color: PickerColor = .red
     
     var body: some View {

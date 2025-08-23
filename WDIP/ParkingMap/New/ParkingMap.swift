@@ -6,14 +6,16 @@
 //
 
 import MapKit
+import SwiftData
 import SwiftUI
 
 struct ParkingMap: View {
-    @StateObject private var locationManager = LocationManager.shared
+    @State private var locationManager = LocationManager.shared
+
+    @Query(sort: \Vehicle.name) private var vehicles: [Vehicle]
 
     @State private var mapCameraPosition: MapCameraPosition = .userLocation(fallback: .automatic)
     @State private var trackingVehicle: Vehicle = .init()
-
     @State private var isShowingVehicleList: Bool = false
 
     var body: some View {
@@ -26,22 +28,14 @@ struct ParkingMap: View {
                 MapCompass()
             }
             .overlay {
-                VStack(spacing: 0) {
-                    Button("Park Here", systemImage: trackingVehicle.icon) {}
-                        .buttonStyle(.glassProminent)
-                        .tint(trackingVehicle.uiColor)
-                    Label("Parking Location Indicator", systemImage: "arrowtriangle.down.fill")
-                        .foregroundStyle(trackingVehicle.uiColor)
-                        .labelStyle(.iconOnly)
-                        .imageScale(.large)
-                }
-                .offset(y: -27) // magic number, to make triangle point at the center
+                parkingPin
             }
             .onAppear {
-                locationManager.requestWhenInUseAuthorization()
+                onStart()
             }
             .toolbar {
-                toolbarMenu()
+                menu
+                parkedActions
             }
             .sheet(isPresented: $isShowingVehicleList) {
                 VehicleList(trackingVehicle: $trackingVehicle)
@@ -54,32 +48,87 @@ struct ParkingMap: View {
     ParkingMap()
 }
 
-extension ParkingMap {
+// MARK: Parking Spot Selection Indicator
+
+private extension ParkingMap {
+    var parkingPin: some View {
+        VStack(spacing: 0) {
+            Button("Park Here", systemImage: trackingVehicle.icon) {
+                //
+            }
+            .buttonStyle(.glassProminent)
+            .tint(trackingVehicle.uiColor)
+
+            Label("Parking Location Indicator", systemImage: "arrowtriangle.down.fill")
+                .foregroundStyle(trackingVehicle.uiColor)
+                .labelStyle(.iconOnly)
+                .imageScale(.large)
+        }
+        .alignmentGuide(VerticalAlignment.center) { d in d[.bottom] }
+    }
+}
+
+// MARK: Toolbar menu
+
+private extension ParkingMap {
     @ToolbarContentBuilder
-    func toolbarMenu() -> some ToolbarContent {
+    var menu: some ToolbarContent {
         ToolbarItem(placement: .bottomBar) {
             Menu {
-                Button("Vehicle List", systemImage: "car.2", action: showVehicleList)
+                Button("Vehicles", systemImage: "car.2") {
+                    showVehicleList()
+                }
                 Button("Parking History", systemImage: "parkingsign.square", action: showParkingHistory)
             } label: {
                 Label("Menu", systemImage: "list.bullet")
             }
         }
-        
+
         ToolbarSpacer(.flexible, placement: .bottomBar)
-        
+    }
+}
+
+// MARK: Toolbar main action buttons when vehicle is parked
+
+private extension ParkingMap {
+    @ToolbarContentBuilder
+    var parkedActions: some ToolbarContent {
         ToolbarItem(placement: .bottomBar) {
+            Button("Center on the Parking Spot", systemImage: trackingVehicle.icon) {
+                //
+            }
+        }
+
+        ToolbarSpacer(.fixed, placement: .bottomBar)
+
+        ToolbarItemGroup(placement: .bottomBar) {
+            Button("Direction To Parking Spot", systemImage: "arrow.turn.left.up") {
+                //
+            }
+
             Button("Parking Spot Info", systemImage: "info") {
                 //
             }
         }
     }
+}
 
+private extension ParkingMap {
     func showVehicleList() {
         isShowingVehicleList = true
     }
 
     func showParkingHistory() {
         //
+    }
+
+    func onStart() {
+        locationManager.requestWhenInUseAuthorization()
+
+        if let vehicle = vehicles.first {
+            trackingVehicle = vehicle
+        } else {
+            showVehicleList()
+        }
     }
 }

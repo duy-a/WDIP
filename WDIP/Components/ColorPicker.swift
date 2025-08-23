@@ -17,15 +17,15 @@ struct ColorPicker: View {
             ForEach(PickerColor.allCases) { color in
                 Button {
                     withAnimation {
-                        selectedColor = color
+                        self.selectedColor = color
                     }
                 } label: {
                     Label("\(color.rawValue) color icon",
                           systemImage: self.selectedColor == color ? "inset.filled.circle" : "circle.fill")
-                    .labelStyle(.iconOnly)
-                    .font(.largeTitle)
-                    .frame(maxWidth: .infinity)
-                    .foregroundStyle(color.color)
+                        .labelStyle(.iconOnly)
+                        .font(.largeTitle)
+                        .frame(maxWidth: .infinity)
+                        .foregroundStyle(color.color)
                 }
                 .buttonStyle(.plain)
             }
@@ -45,7 +45,7 @@ enum PickerColor: String, CaseIterable, Identifiable {
     case red, orange, yellow, green, blue, indigo, purple, brown, cyan, mint, pink, teal
 
     var id: String { self.rawValue }
-    
+
     var color: Color {
         switch self {
             case .red: return .red
@@ -62,8 +62,16 @@ enum PickerColor: String, CaseIterable, Identifiable {
             case .teal: return .teal
         }
     }
+    
+    var colorString: String {
+        self.rawValue
+    }
 
     static func color(from rawValue: String) -> Color {
-        return PickerColor(rawValue: rawValue)?.color ?? .primary
+        PickerColor(rawValue: rawValue)?.color ?? .primary
+    }
+
+    static func color(from rawValue: String) -> PickerColor {
+        PickerColor(rawValue: rawValue) ?? .red
     }
 }
