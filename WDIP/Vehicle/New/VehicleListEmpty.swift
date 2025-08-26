@@ -16,13 +16,9 @@ struct VehicleListEmpty: View {
         } description: {
             Text("Add a vehicle now to start tracking")
         } actions: {
-            Button {
-                //
-            } label: {
-                Label("Add vehicle", systemImage: "plus")
-            }
-            .buttonStyle(.glassProminent)
-            .controlSize(.extraLarge)
+            Button("Add vehicle", systemImage: "plus", action: action)
+                .buttonStyle(.glassProminent)
+                .controlSize(.extraLarge)
         }
     }
 }

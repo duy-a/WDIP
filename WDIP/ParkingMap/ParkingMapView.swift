@@ -30,7 +30,7 @@ struct ParkingMapView: View {
     @State private var isShowingParkingSpotsHistory: Bool = false
 
     var currentParkingSpotCoordinates: CLLocationCoordinate2D? {
-        guard let currentParkingSpot = selectedVehicle.currentParkingSpot else { return nil }
+        guard let currentParkingSpot = selectedVehicle.activeParkingSpot else { return nil }
 
         return CLLocationCoordinate2D(
             latitude: currentParkingSpot.latitude,
@@ -43,9 +43,14 @@ struct ParkingMapView: View {
                 Map(position: $mapCenterPosition) {
                     UserAnnotation()
 
-                    if selectedVehicle.isParked {
-                        Marker(selectedVehicle.name, systemImage: selectedVehicle.icon, coordinate: currentParkingSpotCoordinates!)
-                            .tint(PickerColor(rawValue: selectedVehicle.color)?.color ?? .red)
+                    
+                    if selectedVehicle.isParked, let currentParkingSpotCoordinates {
+                        Annotation("SDFDF", coordinate: currentParkingSpotCoordinates) {
+                            Text("DDDDDDD")
+                        }
+                        
+//                        Marker(selectedVehicle.name, systemImage: selectedVehicle.icon, coordinate: currentParkingSpotCoordinates!)
+//                            .tint(PickerColor(rawValue: selectedVehicle.color)?.color ?? .red)
                     }
                 }
                 .mapControls {
@@ -87,7 +92,7 @@ struct ParkingMapView: View {
                 }
             }
             .sheet(isPresented: $isShowingParkingSpotInfo) {
-                ParkingSpotInfoView(parkingSpot: selectedVehicle.currentParkingSpot!, mapCameraPosition: $mapCenterPosition)
+                ParkingSpotInfoView(parkingSpot: selectedVehicle.activeParkingSpot!, mapCameraPosition: $mapCenterPosition)
             }
             .sheet(isPresented: $isShowingVehicleList) {
                 VehicleListView(selectedVehicleTracking: $selectedVehicle)
@@ -127,21 +132,21 @@ struct ParkingMapView: View {
 
     func getDirectionsInMaps() {
         Task {
-            guard let parkingSpot = selectedVehicle.currentParkingSpot else { return }
-            guard let mkAddress = await parkingSpot.getMKAdress() else { return }
-            let location = CLLocation(latitude: parkingSpot.latitude, longitude: parkingSpot.longitude)
-
-            let destinationMapItem = MKMapItem(location: location, address: mkAddress)
-            destinationMapItem.name = selectedVehicle.name
-
-            let launchOptions = [MKLaunchOptionsDirectionsModeKey: MKLaunchOptionsDirectionsModeDriving]
-
-            destinationMapItem.openInMaps(launchOptions: launchOptions)
+//            guard let parkingSpot = selectedVehicle.activeParkingSpot else { return }
+//            guard let mkAddress = await parkingSpot.getMKAdress() else { return }
+//            let location = CLLocation(latitude: parkingSpot.latitude, longitude: parkingSpot.longitude)
+//
+//            let destinationMapItem = MKMapItem(location: location, address: mkAddress)
+//            destinationMapItem.name = selectedVehicle.name
+//
+//            let launchOptions = [MKLaunchOptionsDirectionsModeKey: MKLaunchOptionsDirectionsModeDriving]
+//
+//            destinationMapItem.openInMaps(launchOptions: launchOptions)
         }
     }
 
     func removeVehicleFromParkingSpot() {
-        selectedVehicle.currentParkingSpot?.parkingEndTime = .now
+        selectedVehicle.activeParkingSpot?.parkingEndTime = .now
         selectedVehicle.isParked = false
     }
 }

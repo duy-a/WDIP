@@ -20,28 +20,31 @@ struct VehicleList: View {
 
     var body: some View {
         NavigationStack {
-            if vehicles.isEmpty {
-                VehicleListEmpty(action: addNewVehicle)
-            } else {
-                List(vehicles) { vehicle in
-                    VehicleListRow(vehicle: vehicle) {
-                        track(vehicle)
-                    } secondaryAction: {
-                        showInfo(for: vehicle)
+            Group {
+                if vehicles.isEmpty {
+                    VehicleListEmpty(action: addNewVehicle)
+                } else {
+                    List(vehicles) { vehicle in
+                        VehicleListRow(vehicle: vehicle) {
+                            track(vehicle)
+                        } secondaryAction: {
+                            showInfo(for: vehicle)
+                        }
                     }
                 }
-                .navigationTitle("Your Vehicles")
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    toolbarButtons()
-                }
-                .sheet(isPresented: $isShowingNewVehicleForm) {
-                    VehicleForm()
-                }
-                .sheet(item: $selectedVehicle) { vehicle in
-                    VehicleForm(vehicle: vehicle)
-                }
             }
+            .navigationTitle("Your Vehicles")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                toolbarButtons()
+            }
+            .sheet(isPresented: $isShowingNewVehicleForm) {
+                VehicleForm()
+            }
+            .sheet(item: $selectedVehicle) { vehicle in
+                VehicleForm(vehicle: vehicle)
+            }
+            .interactiveDismissDisabled(vehicles.isEmpty)
         }
     }
 }
@@ -54,12 +57,14 @@ struct VehicleList: View {
 extension VehicleList {
     @ToolbarContentBuilder
     func toolbarButtons() -> some ToolbarContent {
-        ToolbarItem(placement: .cancellationAction) {
-            Button("Cancel", systemImage: "xmark", action: { dismiss() })
+        if !vehicles.isEmpty {
+            ToolbarItem(placement: .cancellationAction) {
+                Button("Close", systemImage: "xmark", role: .close, action: { dismiss() })
+            }
         }
 
         ToolbarItem(placement: .primaryAction) {
-            Button("Add New Vehicle", systemImage: "plus", action: addNewVehicle)
+            Button("Add New Vehicle", systemImage: "plus", role: .confirm, action: addNewVehicle)
         }
     }
 }

@@ -131,14 +131,14 @@ struct ParkingSpotInfoView: View {
 
     func getDirectionsInMaps() {
         Task {
-            guard let mkAddress = await parkingSpot.getMKAdress() else { return }
-            let location = CLLocation(latitude: parkingSpot.latitude, longitude: parkingSpot.longitude)
-
-            let destinationMapItem = MKMapItem(location: location, address: mkAddress)
-
-            let launchOptions = [MKLaunchOptionsDirectionsModeKey: MKLaunchOptionsDirectionsModeDriving]
-
-            destinationMapItem.openInMaps(launchOptions: launchOptions)
+//            guard let mkAddress = await parkingSpot.getMKAdress() else { return }
+//            let location = CLLocation(latitude: parkingSpot.latitude, longitude: parkingSpot.longitude)
+//
+//            let destinationMapItem = MKMapItem(location: location, address: mkAddress)
+//
+//            let launchOptions = [MKLaunchOptionsDirectionsModeKey: MKLaunchOptionsDirectionsModeDriving]
+//
+//            destinationMapItem.openInMaps(launchOptions: launchOptions)
         }
     }
 }

@@ -10,25 +10,48 @@ import SwiftData
 import SwiftUI
 
 struct ParkingMap: View {
+    @Environment(\.modelContext) private var modelContext
+
     @State private var locationManager = LocationManager.shared
 
     @Query(sort: \Vehicle.name) private var vehicles: [Vehicle]
 
     @State private var mapCameraPosition: MapCameraPosition = .userLocation(fallback: .automatic)
+    @State private var mapCenterCoordinates: CLLocationCoordinate2D? = nil
+
     @State private var trackingVehicle: Vehicle = .init()
+    @State private var selectedParkingSpot: ParkingSpot? = nil
+
     @State private var isShowingVehicleList: Bool = false
+    @State private var isShowingParkingSpotHistoryList: Bool = false
+
+    var currentParkingSpotCoordinates: CLLocationCoordinate2D? {
+        trackingVehicle.activeParkingSpot?.coordinates
+    }
 
     var body: some View {
         NavigationStack {
             Map(position: $mapCameraPosition) {
                 UserAnnotation()
+
+                if let currentParkingSpotCoordinates, trackingVehicle.isParked {
+                    Annotation(trackingVehicle.name, coordinate: currentParkingSpotCoordinates, anchor: .bottom) {
+                        ParkingMapMarker(actionName: "Unpark", icon: trackingVehicle.icon, color: trackingVehicle.uiColor, action: unpark)
+                    }
+                }
+            }
+            .onMapCameraChange {
+                mapCenterCoordinates = $0.camera.centerCoordinate
             }
             .mapControls {
                 MapUserLocationButton()
                 MapCompass()
             }
             .overlay {
-                parkingPin
+                ParkingMapMarker(actionName: "Park Here", icon: trackingVehicle.icon, color: trackingVehicle.uiColor, action: parkHere)
+                    .alignmentGuide(VerticalAlignment.center) { d in d[.bottom] }
+                    .opacity(trackingVehicle.isParked ? 0 : 1)
+                    .disabled(trackingVehicle.isParked)
             }
             .onAppear {
                 onStart()
@@ -39,6 +62,17 @@ struct ParkingMap: View {
             }
             .sheet(isPresented: $isShowingVehicleList) {
                 VehicleList(trackingVehicle: $trackingVehicle)
+            }
+            .sheet(isPresented: $isShowingParkingSpotHistoryList) {
+                ParkingSpotList(trackingVehicle: $trackingVehicle)
+            }
+            .sheet(item: $selectedParkingSpot) { parkingSpot in
+                ParkingSpotForm(parkingSpot: parkingSpot)
+            }
+            .onChange(of: vehicles) { oldVehicles, newVehicles in
+                if oldVehicles.isEmpty && !newVehicles.isEmpty || !newVehicles.contains(trackingVehicle) {
+                    trackFirstVehicle(vehicles: newVehicles)
+                }
             }
         }
     }
@@ -53,11 +87,9 @@ struct ParkingMap: View {
 private extension ParkingMap {
     var parkingPin: some View {
         VStack(spacing: 0) {
-            Button("Park Here", systemImage: trackingVehicle.icon) {
-                //
-            }
-            .buttonStyle(.glassProminent)
-            .tint(trackingVehicle.uiColor)
+            Button("Park Here", systemImage: trackingVehicle.icon, action: parkHere)
+                .buttonStyle(.glassProminent)
+                .tint(trackingVehicle.uiColor)
 
             Label("Parking Location Indicator", systemImage: "arrowtriangle.down.fill")
                 .foregroundStyle(trackingVehicle.uiColor)
@@ -93,21 +125,16 @@ private extension ParkingMap {
 private extension ParkingMap {
     @ToolbarContentBuilder
     var parkedActions: some ToolbarContent {
-        ToolbarItem(placement: .bottomBar) {
-            Button("Center on the Parking Spot", systemImage: trackingVehicle.icon) {
-                //
-            }
-        }
-
-        ToolbarSpacer(.fixed, placement: .bottomBar)
-
-        ToolbarItemGroup(placement: .bottomBar) {
-            Button("Direction To Parking Spot", systemImage: "arrow.turn.left.up") {
-                //
+        if let activeParkingSpot = trackingVehicle.activeParkingSpot, trackingVehicle.isParked {
+            ToolbarItem(placement: .bottomBar) {
+                Button("Center on the Parking Spot", systemImage: trackingVehicle.icon, action: centerOnParkedSpot)
             }
 
-            Button("Parking Spot Info", systemImage: "info") {
-                //
+            ToolbarSpacer(.fixed, placement: .bottomBar)
+
+            ToolbarItemGroup(placement: .bottomBar) {
+                Button("Direction To Parking Spot", systemImage: "arrow.turn.left.up", action: activeParkingSpot.getDirectionsInMaps)
+                Button("Parking Spot Info", systemImage: "info", action: showCurrentParkingSpotInfo)
             }
         }
     }
@@ -119,16 +146,43 @@ private extension ParkingMap {
     }
 
     func showParkingHistory() {
-        //
+        isShowingParkingSpotHistoryList = true
+    }
+
+    func showCurrentParkingSpotInfo() {
+        selectedParkingSpot = trackingVehicle.activeParkingSpot
     }
 
     func onStart() {
         locationManager.requestWhenInUseAuthorization()
+        trackFirstVehicle(vehicles: vehicles)
+    }
 
-        if let vehicle = vehicles.first {
-            trackingVehicle = vehicle
-        } else {
-            showVehicleList()
-        }
+    func trackFirstVehicle(vehicles: [Vehicle]) {
+        guard let vehicle = vehicles.first else { return showVehicleList() }
+
+        trackingVehicle = vehicle
+    }
+
+    func parkHere() {
+        guard let mapCenterCoordinates else { return }
+
+        let parkingSpot = ParkingSpot(coordinates: mapCenterCoordinates)
+        parkingSpot.vehicle = trackingVehicle
+
+        trackingVehicle.isParked = true
+
+        modelContext.insert(parkingSpot)
+    }
+
+    func unpark() {
+        trackingVehicle.activeParkingSpot?.parkingEndTime = .now
+        trackingVehicle.isParked = false
+    }
+
+    func centerOnParkedSpot() {
+        guard let currentParkingSpotCoordinates else { return }
+
+        mapCameraPosition = .camera(MapCamera(centerCoordinate: currentParkingSpotCoordinates, distance: 3500))
     }
 }
