@@ -183,6 +183,8 @@ private extension ParkingMap {
     func centerOnParkedSpot() {
         guard let currentParkingSpotCoordinates else { return }
 
-        mapCameraPosition = .camera(MapCamera(centerCoordinate: currentParkingSpotCoordinates, distance: 3500))
+        withAnimation {
+            mapCameraPosition = .camera(MapCamera(centerCoordinate: currentParkingSpotCoordinates, distance: 3500))
+        }
     }
 }
