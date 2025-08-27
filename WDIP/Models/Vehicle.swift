@@ -8,6 +8,7 @@
 import Foundation
 import SwiftData
 import SwiftUI
+import MapKit
 
 @Model
 final class Vehicle {
@@ -23,16 +24,16 @@ final class Vehicle {
         self.name = name
         self.icon = icon
         self.color = color
-        self.isParked = false
+        self.isParked = isParked
     }
 
-    var currentParkingSpot: ParkingSpot? {
-        guard let parkingSpots else { return nil }
+    var uiColor: Color {
+        PickerColor.color(from: color)
+    }
 
-        if isParked {
-            return parkingSpots.sorted { $0.parkingStartTime > $1.parkingStartTime }.first
-        }
+    var activeParkingSpot: ParkingSpot? {
+        guard isParked, let parkingSpots else { return nil }
 
-        return nil
+        return parkingSpots.sorted { $0.parkingStartTime > $1.parkingStartTime }.first
     }
 }

@@ -22,7 +22,7 @@ extension StoreProvider {
         sampleParkingSpot2.vehicle = sampleVehicle
         
         sampleParkingSpot3.parkingEndTime = Calendar.current.date(byAdding: .day, value: 5, to: .now)!
-        sampleParkingSpot3.vehicle = sampleVehicle
+        sampleParkingSpot3.vehicle = sampleVehicle2
         
         modelContainer.mainContext.insert(sampleParkingSpot1)
         modelContainer.mainContext.insert(sampleParkingSpot2)
@@ -34,9 +34,15 @@ extension StoreProvider {
 
 extension StoreProvider {
     static let sampleVehicle = Vehicle(
-        name: "Vehicle #\(Int.random(in: 1...10))",
-        icon: PickerIcons.allCases.randomElement()!.rawValue,
-        color: PickerColors.allCases.randomElement()!.rawValue
+        name: "Vehicle #\(Int.random(in: 1...5))",
+        icon: PickerIcon.allCases.randomElement()!.rawValue,
+        color: PickerColor.allCases.randomElement()!.rawValue
+    )
+    
+    static let sampleVehicle2 = Vehicle(
+        name: "Vehicle #\(Int.random(in: 6...10))",
+        icon: PickerIcon.allCases.randomElement()!.rawValue,
+        color: PickerColor.allCases.randomElement()!.rawValue
     )
     
     static let sampleParkingSpot1 = ParkingSpot(

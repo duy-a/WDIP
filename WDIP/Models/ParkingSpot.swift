@@ -18,7 +18,6 @@ final class ParkingSpot {
     var parkingStartTime: Date = Date.now
     var parkingEndTime: Date = Date.now
     var notes: String = ""
-    var photo: Data?
 
     var vehicle: Vehicle?
 
@@ -26,15 +25,19 @@ final class ParkingSpot {
         self.latitude = latitude
         self.longitude = longitude
 
-        Task {
-            await getAddress()
-        }
+        getAddress()
+    }
+
+    convenience init(coordinates: CLLocationCoordinate2D) {
+        self.init()
+        self.latitude = coordinates.latitude
+        self.longitude = coordinates.longitude
     }
 
     var isCurrentParkingSpot: Bool {
         guard let vehicle else { return false }
 
-        if self == vehicle.currentParkingSpot {
+        if self == vehicle.activeParkingSpot {
             return true
         }
 
@@ -45,39 +48,17 @@ final class ParkingSpot {
         CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
     }
 
-    private func getAddress() async {
-        let location = CLLocation(latitude: latitude, longitude: longitude)
+    func getDirectionsInMaps() {
+        Task {
+            guard let mkAddress = await getMKAdress() else { return }
+            let location = CLLocation(latitude: latitude, longitude: longitude)
 
-        do {
-            guard let request = MKReverseGeocodingRequest(location: location) else { return }
+            let destinationMapItem = MKMapItem(location: location, address: mkAddress)
+            destinationMapItem.name = vehicle?.name
 
-            let mapItems = try await request.mapItems
+            let launchOptions = [MKLaunchOptionsDirectionsModeKey: MKLaunchOptionsDirectionsModeDriving]
 
-            guard let mapItem = mapItems.first,
-                  let fullAddress = mapItem.addressRepresentations?.fullAddress(includingRegion: true, singleLine: true)
-            else { return }
-
-            address = fullAddress
-
-        } catch {
-            // TODO: catch error
-        }
-    }
-
-    func getMKAdress() async -> MKAddress? {
-        let location = CLLocation(latitude: latitude, longitude: longitude)
-
-        do {
-            guard let request = MKReverseGeocodingRequest(location: location) else { return nil }
-
-            let mapItems = try await request.mapItems
-
-            guard let mapItem = mapItems.first else { return nil }
-
-            return mapItem.address
-        } catch {
-            // TODO: catch error
-            return nil
+            destinationMapItem.openInMaps(launchOptions: launchOptions)
         }
     }
 
@@ -104,5 +85,29 @@ final class ParkingSpot {
 
         let totalDays = totalHours / 24 // Or totalMinutes / (60 * 24)
         return "\(totalDays) day" + (totalDays == 1 ? "" : "s")
+    }
+}
+
+extension ParkingSpot {
+    func getAddress() {
+        Task {
+            if self.address.isEmpty {
+                self.address = await getMKAdress()?.fullAddress ?? ""
+            }
+        }
+    }
+
+    func getMKAdress() async -> MKAddress? {
+        let location = CLLocation(latitude: latitude, longitude: longitude)
+
+        do {
+            guard let mapItem = try await MKReverseGeocodingRequest(location: location)?.mapItems.first else { return nil }
+
+            return mapItem.address
+        } catch {
+            // TODO: catch error
+            dump(error)
+            return nil
+        }
     }
 }

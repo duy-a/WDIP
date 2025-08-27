@@ -15,9 +15,9 @@ struct WDIPApp: App {
     var body: some Scene {
         WindowGroup {
             if isViewedOnboarding {
-                ParkingMapView()
+                ParkingMap()
             } else {
-                OnboardingView()
+                Onboarding()
             }
         }
         .modelContainer(StoreProvider.shared.modelContainer)

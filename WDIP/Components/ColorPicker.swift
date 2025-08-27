@@ -8,24 +8,24 @@
 import SwiftUI
 
 struct ColorPicker: View {
-    @Binding var selectedColor: PickerColors
+    @Binding var selectedColor: PickerColor
 
     let columns = Array(repeating: GridItem(.flexible()), count: 6)
 
     var body: some View {
         LazyVGrid(columns: self.columns, spacing: 10) {
-            ForEach(PickerColors.allCases) { color in
+            ForEach(PickerColor.allCases) { color in
                 Button {
                     withAnimation {
-                        selectedColor = color
+                        self.selectedColor = color
                     }
                 } label: {
                     Label("\(color.rawValue) color icon",
                           systemImage: self.selectedColor == color ? "inset.filled.circle" : "circle.fill")
-                    .labelStyle(.iconOnly)
-                    .font(.largeTitle)
-                    .frame(maxWidth: .infinity)
-                    .foregroundStyle(color.uiColor)
+                        .labelStyle(.iconOnly)
+                        .font(.largeTitle)
+                        .frame(maxWidth: .infinity)
+                        .foregroundStyle(color.color)
                 }
                 .buttonStyle(.plain)
             }
@@ -41,12 +41,12 @@ struct ColorPicker: View {
     }
 }
 
-enum PickerColors: String, CaseIterable, Identifiable {
+enum PickerColor: String, CaseIterable, Identifiable {
     case red, orange, yellow, green, blue, indigo, purple, brown, cyan, mint, pink, teal
 
     var id: String { self.rawValue }
 
-    var uiColor: Color {
+    var color: Color {
         switch self {
             case .red: return .red
             case .orange: return .orange
@@ -62,8 +62,16 @@ enum PickerColors: String, CaseIterable, Identifiable {
             case .teal: return .teal
         }
     }
+    
+    var colorString: String {
+        self.rawValue
+    }
 
-    static func getUIColor(color: String) -> Color {
-        return PickerColors(rawValue: color)?.uiColor ?? .primary
+    static func color(from rawValue: String) -> Color {
+        PickerColor(rawValue: rawValue)?.color ?? .primary
+    }
+
+    static func color(from rawValue: String) -> PickerColor {
+        PickerColor(rawValue: rawValue) ?? .red
     }
 }

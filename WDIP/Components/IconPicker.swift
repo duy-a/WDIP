@@ -8,16 +8,16 @@
 import SwiftUI
 
 struct IconPicker: View {
-    @Binding var selectedIcon: String
+    @Binding var selectedIcon: PickerIcon
 
     let columns = Array(repeating: GridItem(.flexible()), count: 6)
 
     var body: some View {
         LazyVGrid(columns: self.columns, spacing: 10) {
-            ForEach(PickerIcons.allCases) { icon in
+            ForEach(PickerIcon.allCases) { icon in
                 Button {
                     withAnimation {
-                        self.selectedIcon = icon.rawValue
+                        self.selectedIcon = icon
                     }
                 } label: {
                     Label("\(icon.rawValue)", systemImage: icon.rawValue)
@@ -30,7 +30,7 @@ struct IconPicker: View {
                         .padding(3)
                         .overlay(
                             Circle()
-                                .stroke(icon.rawValue == selectedIcon ? .gray : .clear, lineWidth: 2)
+                                .stroke(icon == self.selectedIcon ? .gray : .clear, lineWidth: 2)
                         )
                 }
                 .buttonStyle(.plain)
@@ -42,12 +42,12 @@ struct IconPicker: View {
 #Preview {
     Form {
         Section {
-            IconPicker(selectedIcon: .constant("car"))
+            IconPicker(selectedIcon: .constant(.car))
         }
     }
 }
 
-enum PickerIcons: String, Identifiable, CaseIterable {
+enum PickerIcon: String, Identifiable, CaseIterable {
     case car
     case convertible = "convertible.side"
     case bus
@@ -80,4 +80,12 @@ enum PickerIcons: String, Identifiable, CaseIterable {
     case hare
 
     var id: String { self.rawValue }
+
+    var iconString: String {
+        self.rawValue
+    }
+
+    static func icon(from rawValue: String) -> PickerIcon {
+        PickerIcon(rawValue: rawValue) ?? .car
+    }
 }
