@@ -1,0 +1,95 @@
+{
+  "fill" : "automatic",
+  "groups" : [
+    {
+      "layers" : [
+        {
+          "fill" : {
+            "linear-gradient" : [
+              "extended-srgb:0.00000,0.53333,1.00000,1.00000",
+              "extended-srgb:0.00000,0.53333,1.00000,1.00000"
+            ]
+          },
+          "glass" : false,
+          "image-name" : "parkingsign.square.fill@10x.png",
+          "name" : "parkingsign.square.fill@10x",
+          "position" : {
+            "scale" : 0.44,
+            "translation-in-points" : [
+              255.5703125,
+              -253.6171875
+            ]
+          }
+        }
+      ],
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0.5
+      },
+      "translucency" : {
+        "enabled" : true,
+        "value" : 0.5
+      }
+    },
+    {
+      "layers" : [
+        {
+          "glass" : false,
+          "image-name" : "arrow.turn.right.up@10x.png",
+          "name" : "arrow.turn.right.up@10x",
+          "position" : {
+            "scale" : 0.22,
+            "translation-in-points" : [
+              255.65625,
+              66.0234375
+            ]
+          }
+        }
+      ],
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0.5
+      },
+      "translucency" : {
+        "enabled" : true,
+        "value" : 0.5
+      }
+    },
+    {
+      "layers" : [
+        {
+          "fill" : {
+            "linear-gradient" : [
+              "extended-srgb:0.00000,0.75294,0.90980,1.00000",
+              "extended-srgb:0.00000,0.53333,1.00000,1.00000"
+            ]
+          },
+          "glass" : false,
+          "image-name" : "map.fill@10x.png",
+          "name" : "map.fill@10x",
+          "position" : {
+            "scale" : 0.59,
+            "translation-in-points" : [
+              -187.9609375,
+              190.7734375
+            ]
+          }
+        }
+      ],
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0.5
+      },
+      "translucency" : {
+        "enabled" : true,
+        "value" : 0.5
+      }
+    }
+  ],
+  "supported-platforms" : {
+    "circles" : [
+      "watchOS"
+    ],
+    "squares" : "shared"
+  }
+}
