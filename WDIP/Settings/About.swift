@@ -31,13 +31,8 @@ struct About: View {
             .listRowSeparator(.hidden)
 
             Section {
-                Button("Privacy Policy") {
-                    openURL(URL(string: "https://www.wdip.site/privacy")!)
-                }
-
-                Button("Terms of use") {
-                    openURL(URL(string: "https://www.wdip.site/terms")!)
-                }
+                ButtonExternalLink(title: "Privacy Policy", link: Constants.PRIVACY_LINK)
+                ButtonExternalLink(title: "Terms of Use", link: Constants.TERMS_LINK)
             }
         }
         .navigationTitle("About")

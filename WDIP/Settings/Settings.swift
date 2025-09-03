@@ -16,7 +16,7 @@ struct Settings: View {
                 Section {
                     //
                 }
-                
+
                 Section {
                     NavigationLink(destination: About()) {
                         Label("Send Feedback", systemImage: "waveform.path.ecg.text.clipboard")
@@ -24,9 +24,8 @@ struct Settings: View {
                     NavigationLink(destination: About()) {
                         Label("Rate & Review WDIP", systemImage: "star")
                     }
-                    NavigationLink(destination: About()) {
-                        Label("Join TestFlight Beta", systemImage: "paperplane")
-                    }
+
+                    ButtonExternalLink(title: "Join TestFlight Beta", systemImage: "paperplane", link: Constants.TESTFLIGHT_LINK)
                 }
 
                 Section {

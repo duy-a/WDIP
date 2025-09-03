@@ -12,4 +12,9 @@ enum Constants {
     static let appleParkCoordinates: CLLocationCoordinate2D = .init(latitude: 37.33478414571969, longitude: -122.00894818929088)
     static let appleVisitorCetnerCoordinates: CLLocationCoordinate2D = .init(latitude: 37.33292652594628, longitude: -122.00538440304892)
     static let defaultZoomLevel: CLLocationDistance = 500
+    
+    
+    static let PRIVACY_LINK: String = "https://www.wdip.site/privacy"
+    static let TERMS_LINK: String = "https://www.wdip.site/terms"
+    static let TESTFLIGHT_LINK: String = "https://testflight.apple.com/join/u6BBeR4d"
 }
