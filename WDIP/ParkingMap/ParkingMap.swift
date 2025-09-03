@@ -24,6 +24,7 @@ struct ParkingMap: View {
 
     @State private var isShowingVehicleList: Bool = false
     @State private var isShowingParkingSpotHistoryList: Bool = false
+    @State private var isShowingSettings: Bool = false
 
     var currentParkingSpotCoordinates: CLLocationCoordinate2D? {
         trackingVehicle.activeParkingSpot?.coordinates
@@ -66,6 +67,9 @@ struct ParkingMap: View {
             .sheet(isPresented: $isShowingParkingSpotHistoryList) {
                 ParkingSpotList(trackingVehicle: $trackingVehicle)
             }
+            .sheet(isPresented: $isShowingSettings, content: {
+                Settings()
+            })
             .sheet(item: $selectedParkingSpot) { parkingSpot in
                 ParkingSpotForm(parkingSpot: parkingSpot)
             }
@@ -105,12 +109,11 @@ private extension ParkingMap {
 private extension ParkingMap {
     @ToolbarContentBuilder
     var menu: some ToolbarContent {
-        ToolbarItem(placement: .bottomBar) {
+        ToolbarItem(placement: .topBarLeading) {
             Menu {
-                Button("Vehicles", systemImage: "car.2") {
-                    showVehicleList()
-                }
+                Button("Vehicles", systemImage: "car.2", action: showVehicleList)
                 Button("Parking History", systemImage: "parkingsign.square", action: showParkingHistory)
+                Button("Settings", systemImage: "gearshape", action: showSettings )
             } label: {
                 Label("Menu", systemImage: "list.bullet")
             }
@@ -147,6 +150,10 @@ private extension ParkingMap {
 
     func showParkingHistory() {
         isShowingParkingSpotHistoryList = true
+    }
+    
+    func showSettings() {
+        isShowingSettings = true
     }
 
     func showCurrentParkingSpotInfo() {
