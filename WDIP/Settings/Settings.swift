@@ -18,13 +18,11 @@ struct Settings: View {
                 }
 
                 Section {
-                    NavigationLink(destination: About()) {
+                    NavigationLink(destination: Feedback()) {
                         Label("Send Feedback", systemImage: "waveform.path.ecg.text.clipboard")
                     }
-                    NavigationLink(destination: About()) {
-                        Label("Rate & Review WDIP", systemImage: "star")
-                    }
 
+//                    ButtonExternalLink(title: "Rate & Review WDIP", systemImage: "star", link: Constants.TESTFLIGHT_LINK)
                     ButtonExternalLink(title: "Join TestFlight Beta", systemImage: "paperplane", link: Constants.TESTFLIGHT_LINK)
                 }
 

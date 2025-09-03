@@ -17,4 +17,9 @@ enum Constants {
     static let PRIVACY_LINK: String = "https://www.wdip.site/privacy"
     static let TERMS_LINK: String = "https://www.wdip.site/terms"
     static let TESTFLIGHT_LINK: String = "https://testflight.apple.com/join/u6BBeR4d"
+    static let APP_TWITTER_LINK: String = "https://x.com/wdip_app"
+    static let APP_MASTADON_LINK: String = ""
+    static let DEV_TWITTER_LINK: String = "https://x.com/duy_anh_ngac"
+    static let DEV_MASTADON_LINK: String = "https://mastodon.social/@duyanhngac"
+    static let SUPPORT_EMAIL: String = "feedback@wdip.site"
 }
