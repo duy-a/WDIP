@@ -22,6 +22,7 @@ struct ParkingSpotList: View {
     @State private var endDateTimeFilter: Date = .now
     @State private var vehiclesFilter: Set<Vehicle> = []
     @State private var isShowingFilters: Bool = false
+    @State private var isFiltering: Bool = false
 
     var searchResults: [ParkingSpot] {
         let filteredByDateTimePeriod = parkingSpots.filter {
@@ -61,6 +62,18 @@ struct ParkingSpotList: View {
                 ParkingSpotListFilters(startDateTimeFilter: $startDateTimeFilter,
                                        endDateTimeFilter: $endDateTimeFilter,
                                        vehiclesFilter: $vehiclesFilter)
+                    .presentationDetents([.medium, .large])
+            }
+            .onAppear {
+                if startDateTimeFilter == .distantPast {
+                    startDateTimeFilter = parkingSpots.map(\.parkingStartTime).min() ?? .now
+                }
+            }
+            .onChange(of: startDateTimeFilter) { _, newValue in
+                // I know this is a repeated code but it works so far. Future me, good luck
+                if newValue == .distantPast {
+                    startDateTimeFilter = parkingSpots.map(\.parkingStartTime).min() ?? .now
+                }
             }
         }
     }

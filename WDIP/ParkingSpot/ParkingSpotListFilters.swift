@@ -54,6 +54,9 @@ struct ParkingSpotListFilters: View {
             .toolbar {
                 toolbarContent()
             }
+            .onAppear {
+                vehiclesFilter = Set(vehicles)
+            }
         }
     }
 }
@@ -68,10 +71,20 @@ extension ParkingSpotListFilters {
         ToolbarItem(placement: .cancellationAction) {
             Button("Close", systemImage: "xmark", role: .close, action: { dismiss() })
         }
+
+        ToolbarItem(placement: .topBarTrailing) {
+            Button("Reset Filters", systemImage: "arrow.trianglehead.counterclockwise", action: resetFilters)
+        }
     }
 }
 
 extension ParkingSpotListFilters {
+    private func resetFilters() {
+        startDateTimeFilter = .distantPast
+        endDateTimeFilter = .now
+        vehiclesFilter = Set(vehicles)
+    }
+
     private func toggleVehicleFilter(vehicle: Vehicle) {
         if vehiclesFilter.contains(vehicle) {
             vehiclesFilter.remove(vehicle)
