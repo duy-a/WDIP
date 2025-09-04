@@ -18,12 +18,26 @@ struct ParkingSpotList: View {
     @State private var selectedParkingSpot: ParkingSpot? = nil
 
     @State private var searchText: String = ""
+    @State private var startDateTimeFilter: Date = .distantPast
+    @State private var endDateTimeFilter: Date = .now
+    @State private var vehiclesFilter: Set<Vehicle> = []
+    @State private var isShowingFilters: Bool = false
 
     var searchResults: [ParkingSpot] {
+        let filteredByDateTimePeriod = parkingSpots.filter {
+            $0.parkingStartTime >= startDateTimeFilter &&
+                $0.parkingStartTime <= endDateTimeFilter
+        }
+        let filteredByVehicles = filteredByDateTimePeriod.filter {
+            if vehiclesFilter.isEmpty { return false }
+            guard let vehicle = $0.vehicle else { return false }
+            return vehiclesFilter.contains(vehicle)
+        }
+
         if searchText.isEmpty {
-            return parkingSpots
+            return filteredByVehicles
         } else {
-            return parkingSpots.filter { $0.address.contains(searchText) }
+            return filteredByVehicles.filter { $0.address.contains(searchText) }
         }
     }
 
@@ -43,6 +57,15 @@ struct ParkingSpotList: View {
             .sheet(item: $selectedParkingSpot) { parkingSpot in
                 ParkingSpotForm(parkingSpot: parkingSpot)
             }
+            .sheet(isPresented: $isShowingFilters) {
+                ParkingSpotListFilters(startDateTimeFilter: $startDateTimeFilter,
+                                       endDateTimeFilter: $endDateTimeFilter,
+                                       vehiclesFilter: $vehiclesFilter)
+                    .presentationDetents([.medium, .large])
+            }
+            .onChange(of: startDateTimeFilter, initial: true) { _, _ in
+                resetFilters()
+            }
         }
     }
 }
@@ -59,9 +82,7 @@ extension ParkingSpotList {
         }
 
         ToolbarItem(placement: .bottomBar) {
-            Button("Filter by", systemImage: "line.3.horizontal.decrease") {
-                //
-            }
+            Button("Filter by", systemImage: "line.3.horizontal.decrease", action: showFilters)
         }
 
         ToolbarSpacer(placement: .bottomBar)
@@ -71,7 +92,20 @@ extension ParkingSpotList {
 }
 
 extension ParkingSpotList {
+    private func resetFilters() {
+        if startDateTimeFilter == .distantPast {
+            vehiclesFilter.removeAll()
+            vehiclesFilter.insert(trackingVehicle)
+            startDateTimeFilter = parkingSpots.map(\.parkingStartTime).min() ?? .now
+            endDateTimeFilter = .now
+        }
+    }
+
     private func showInfo(for parkingSpot: ParkingSpot) {
         selectedParkingSpot = parkingSpot
+    }
+
+    private func showFilters() {
+        isShowingFilters = true
     }
 }
