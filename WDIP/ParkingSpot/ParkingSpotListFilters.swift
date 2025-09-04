@@ -22,10 +22,10 @@ struct ParkingSpotListFilters: View {
             Form {
                 Section("Parking Period") {
                     DatePicker("Start Date", selection: $startDateTimeFilter)
-                    DatePicker("End Date", selection: $endDateTimeFilter)
+                    DatePicker("End Date", selection: $endDateTimeFilter, in: startDateTimeFilter ... .now)
                 }
 
-                Section("Vehicle") {
+                Section {
                     ForEach(vehicles) { vehicle in
                         Button {
                             toggleVehicleFilter(vehicle: vehicle)
@@ -38,6 +38,7 @@ struct ParkingSpotListFilters: View {
                                     Image(systemName: vehicle.icon)
                                         .foregroundStyle(vehicle.uiColor)
                                 }
+                                .frame(maxWidth: .infinity, alignment: .leading)
 
                                 Image(systemName: "checkmark")
                                     .foregroundStyle(.primary)
@@ -47,15 +48,18 @@ struct ParkingSpotListFilters: View {
                         }
                         .buttonStyle(.plain)
                     }
+                } header: {
+                    HStack {
+                        Text("Vehicles")
+                        Spacer()
+                        Button(vehiclesFilter.isEmpty ? "Select All" : "Deselect All", action: toggleAllVehicleSelection)
+                    }
                 }
             }
             .navigationTitle("Filter")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 toolbarContent()
-            }
-            .onAppear {
-                vehiclesFilter = Set(vehicles)
             }
         }
     }
@@ -73,16 +77,15 @@ extension ParkingSpotListFilters {
         }
 
         ToolbarItem(placement: .topBarTrailing) {
-            Button("Reset Filters", systemImage: "arrow.trianglehead.counterclockwise", action: resetFilters)
+            Button("Reset Filters", systemImage: "arrow.trianglehead.counterclockwise", action: triggerResetFilters)
         }
     }
 }
 
 extension ParkingSpotListFilters {
-    private func resetFilters() {
+    private func triggerResetFilters() {
         startDateTimeFilter = .distantPast
-        endDateTimeFilter = .now
-        vehiclesFilter = Set(vehicles)
+        // the rest of filters will be reset by parent, whacky? yes, but I don't want to spend more time on this
     }
 
     private func toggleVehicleFilter(vehicle: Vehicle) {
@@ -90,6 +93,14 @@ extension ParkingSpotListFilters {
             vehiclesFilter.remove(vehicle)
         } else {
             vehiclesFilter.insert(vehicle)
+        }
+    }
+
+    private func toggleAllVehicleSelection() {
+        if vehiclesFilter.isEmpty {
+            vehiclesFilter = Set(vehicles)
+        } else {
+            vehiclesFilter.removeAll()
         }
     }
 }

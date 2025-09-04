@@ -22,7 +22,6 @@ struct ParkingSpotList: View {
     @State private var endDateTimeFilter: Date = .now
     @State private var vehiclesFilter: Set<Vehicle> = []
     @State private var isShowingFilters: Bool = false
-    @State private var isFiltering: Bool = false
 
     var searchResults: [ParkingSpot] {
         let filteredByDateTimePeriod = parkingSpots.filter {
@@ -30,7 +29,7 @@ struct ParkingSpotList: View {
                 $0.parkingStartTime <= endDateTimeFilter
         }
         let filteredByVehicles = filteredByDateTimePeriod.filter {
-            if vehiclesFilter.isEmpty { return true }
+            if vehiclesFilter.isEmpty { return false }
             guard let vehicle = $0.vehicle else { return false }
             return vehiclesFilter.contains(vehicle)
         }
@@ -64,16 +63,8 @@ struct ParkingSpotList: View {
                                        vehiclesFilter: $vehiclesFilter)
                     .presentationDetents([.medium, .large])
             }
-            .onAppear {
-                if startDateTimeFilter == .distantPast {
-                    startDateTimeFilter = parkingSpots.map(\.parkingStartTime).min() ?? .now
-                }
-            }
-            .onChange(of: startDateTimeFilter) { _, newValue in
-                // I know this is a repeated code but it works so far. Future me, good luck
-                if newValue == .distantPast {
-                    startDateTimeFilter = parkingSpots.map(\.parkingStartTime).min() ?? .now
-                }
+            .onChange(of: startDateTimeFilter, initial: true) { _, _ in
+                resetFilters()
             }
         }
     }
@@ -101,6 +92,15 @@ extension ParkingSpotList {
 }
 
 extension ParkingSpotList {
+    private func resetFilters() {
+        if startDateTimeFilter == .distantPast {
+            vehiclesFilter.removeAll()
+            vehiclesFilter.insert(trackingVehicle)
+            startDateTimeFilter = parkingSpots.map(\.parkingStartTime).min() ?? .now
+            endDateTimeFilter = .now
+        }
+    }
+
     private func showInfo(for parkingSpot: ParkingSpot) {
         selectedParkingSpot = parkingSpot
     }
