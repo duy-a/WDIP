@@ -60,6 +60,8 @@ struct ParkingSpotForm: View {
                     Text("Duration: \(parkingSpot.parkingDuration)")
                 }
             }
+            .navigationTitle("Parking Info")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 toolbarContent()
             }

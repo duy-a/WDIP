@@ -32,6 +32,8 @@ struct Settings: View {
                     }
                 }
             }
+            .navigationTitle("Settings")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 toolbarContent()
             }
