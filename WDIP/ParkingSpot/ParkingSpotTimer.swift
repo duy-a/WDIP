@@ -39,9 +39,6 @@ struct ParkingSpotTimer: View {
     var body: some View {
         NavigationStack {
             Form {
-                Text(parkingSpot.timerEndTime, format: .dateTime)
-                Text(longTermParkingEndDate, format: .dateTime)
-
                 Section {
                     LabeledContent {
                         Text(parkingSpot.parkingStartTime, format: .dateTime)
