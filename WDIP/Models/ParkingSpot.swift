@@ -18,6 +18,8 @@ final class ParkingSpot {
     var parkingStartTime: Date = Date.now
     var parkingEndTime: Date = Date.now
     var notes: String = ""
+    var hasRunningTimer: Bool = false
+    var timerEndTime: Date = Calendar.current.startOfDay(for: .distantPast)
 
     var vehicle: Vehicle?
 

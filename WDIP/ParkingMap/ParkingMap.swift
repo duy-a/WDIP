@@ -153,7 +153,8 @@ private extension ParkingMap {
     }
 
     private func showParkingSpotTimer() {
-        sheetView = SheetView(view: ParkingSpotTimer())
+        guard let parkingSpot = trackingVehicle.activeParkingSpot else { return }
+        sheetView = SheetView(view: ParkingSpotTimer(parkingSpot: parkingSpot))
     }
 
     private func onStart() {
