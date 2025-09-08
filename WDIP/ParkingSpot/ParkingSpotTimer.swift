@@ -13,12 +13,15 @@ struct ParkingSpotTimer: View {
 
     @Bindable var parkingSpot: ParkingSpot
 
-    private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+//    private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+
+    @State private var timerCancellable: Cancellable?
 
     @State private var duration: Date = Calendar.current.startOfDay(for: .distantPast)
     @State private var remainingTime: TimeInterval = 0
     @State private var isLongTermParking: Bool = false
     @State private var longTermParkingEndDate: Date = .now
+    @State private var isShowingWarning: Bool = false
 
     @State private var toggleReminder: Bool = false
 
@@ -62,19 +65,31 @@ struct ParkingSpotTimer: View {
                         Toggle("Long-term parking", systemImage: "parkingsign.circle", isOn: $isLongTermParking)
 
                         if isLongTermParking {
-                            DatePicker(selection: $longTermParkingEndDate) {
+                            DatePicker(selection: $longTermParkingEndDate, in: parkingSpot.parkingStartTime...) {
                                 Label("End Date", systemImage: "calendar")
+                            }
+                            .onChange(of: longTermParkingEndDate) { _, _ in
+                                clearWarning()
                             }
                         } else {
                             DatePicker(selection: $duration, displayedComponents: [.hourAndMinute]) {
                                 Label("Duration", systemImage: "timer")
+                            }
+                            .onChange(of: duration) { _, _ in
+                                clearWarning()
                             }
                         }
                     }
                 } header: {
                     Text("Timer")
                 } footer: {
-                    Text("The timer always starts from your parking time.")
+                    VStack(alignment: .leading) {
+                        Text("The timer always starts from your parking time.")
+                        if isShowingWarning {
+                            Text("Selected duration has already passed.")
+                                .foregroundStyle(.red)
+                        }
+                    }
                 }
 
                 Section {
@@ -86,10 +101,11 @@ struct ParkingSpotTimer: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { toolbarContent }
             .onAppear { onAppear() }
-            .onReceive(timer) { _ in
-                countdown()
-            }
+//            .onReceive(timer) { _ in
+//                countdown()
+//            }
         }
+        .presentationDetents([.medium, .large])
     }
 }
 
@@ -104,14 +120,14 @@ extension ParkingSpotTimer {
             Button("Cancel", systemImage: "xmark", role: .close, action: { dismiss() })
         }
 
-        ToolbarItem(placement: .primaryAction) {
-            Button("Clear", systemImage: "arrow.clockwise", role: .cancel, action: clearTimer)
-        }
-
-        ToolbarSpacer(.fixed, placement: .primaryAction)
-
-        ToolbarItem(placement: .primaryAction) {
-            Button("Start Timer", systemImage: "stopwatch", role: .confirm, action: startTimer)
+        if parkingSpot.hasRunningTimer {
+            ToolbarItem(placement: .primaryAction) {
+                Button("Clear", systemImage: "stop.fill", role: .cancel, action: clearTimer)
+            }
+        } else {
+            ToolbarItem(placement: .primaryAction) {
+                Button("Start Timer", systemImage: "stopwatch", role: .confirm, action: startCountdown)
+            }
         }
     }
 }
@@ -119,6 +135,11 @@ extension ParkingSpotTimer {
 extension ParkingSpotTimer {
     private func onAppear() {
         calculateRemainingTime()
+        clearWarning()
+
+        if parkingSpot.hasRunningTimer {
+            startTimer()
+        }
     }
 
     private func countdown() {
@@ -127,6 +148,12 @@ extension ParkingSpotTimer {
     }
 
     private func startTimer() {
+        timerCancellable = Timer.publish(every: 1, on: .main, in: .common)
+            .autoconnect()
+            .sink { _ in countdown() }
+    }
+
+    private func startCountdown() {
         let calendar = Calendar.current
 
         var timerEndTime: Date?
@@ -148,21 +175,25 @@ extension ParkingSpotTimer {
 
         guard let timerEndTime else { return }
 
-        parkingSpot.hasRunningTimer = true
         parkingSpot.timerEndTime = timerEndTime
 
         calculateRemainingTime()
+        startTimer()
     }
 
     private func calculateRemainingTime() {
-        if parkingSpot.hasRunningTimer {
-            let timeDiff = getTimeDiff(from: .now, to: parkingSpot.timerEndTime)
-            remainingTime = TimeInterval(timeDiff.days * 86400 + timeDiff.hours * 3600 + timeDiff.minutes * 60 + timeDiff.seconds)
+        let timeDiff = getTimeDiff(from: .now, to: parkingSpot.timerEndTime)
+        remainingTime = TimeInterval(timeDiff.days * 86400 + timeDiff.hours * 3600 + timeDiff.minutes * 60 + timeDiff.seconds)
+
+        if remainingTime > 0 {
+            parkingSpot.hasRunningTimer = true
+        } else {
+            isShowingWarning = true
         }
     }
 
     private func getTimeDiff(from: Date, to: Date) -> (days: Int, hours: Int, minutes: Int, seconds: Int) {
-        let timeDiffComponent = Calendar.current.dateComponents([.hour, .minute, .second], from: from, to: to)
+        let timeDiffComponent = Calendar.current.dateComponents([.day, .hour, .minute, .second], from: from, to: to)
         let days = timeDiffComponent.day ?? 0
         let hours = timeDiffComponent.hour ?? 0
         let minutes = timeDiffComponent.minute ?? 0
@@ -177,5 +208,14 @@ extension ParkingSpotTimer {
 
         duration = Calendar.current.startOfDay(for: .distantPast)
         remainingTime = 0
+
+        timerCancellable?.cancel()
+        timerCancellable = nil
+
+        clearWarning()
+    }
+
+    private func clearWarning() {
+        isShowingWarning = false
     }
 }
