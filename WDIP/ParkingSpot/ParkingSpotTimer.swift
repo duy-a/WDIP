@@ -5,7 +5,6 @@
 //  Created by Duy Anh Ngac on 5/9/25.
 //
 
-import Combine
 import SwiftUI
 
 struct ParkingSpotTimer: View {
@@ -13,9 +12,7 @@ struct ParkingSpotTimer: View {
 
     @Bindable var parkingSpot: ParkingSpot
 
-//    private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
-
-    @State private var timerCancellable: Cancellable?
+    @State private var timerTask: Task<Void, Never>? = nil
 
     @State private var duration: Date = Calendar.current.startOfDay(for: .distantPast)
     @State private var remainingTime: TimeInterval = 0
@@ -100,10 +97,14 @@ struct ParkingSpotTimer: View {
             .navigationTitle("Timer & Reminder")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { toolbarContent }
-            .onAppear { onAppear() }
-//            .onReceive(timer) { _ in
-//                countdown()
-//            }
+            .onAppear {
+                calculateRemainingTime()
+                startTimer()
+                clearWarning()
+            }
+            .onDisappear {
+                stopTimer()
+            }
         }
         .presentationDetents([.medium, .large])
     }
@@ -133,24 +134,22 @@ extension ParkingSpotTimer {
 }
 
 extension ParkingSpotTimer {
-    private func onAppear() {
-        calculateRemainingTime()
-        clearWarning()
+    private func startTimer() {
+        stopTimer()
 
-        if parkingSpot.hasRunningTimer {
-            startTimer()
+        guard parkingSpot.hasRunningTimer, remainingTime > 0 else { return }
+
+        timerTask = Task { @MainActor in
+            while !Task.isCancelled && parkingSpot.hasRunningTimer && remainingTime > 0 {
+                try? await Task.sleep(nanoseconds: 1000000000)
+                remainingTime -= 1
+            }
         }
     }
 
-    private func countdown() {
-        guard parkingSpot.hasRunningTimer, remainingTime > 0 else { return }
-        remainingTime -= 1
-    }
-
-    private func startTimer() {
-        timerCancellable = Timer.publish(every: 1, on: .main, in: .common)
-            .autoconnect()
-            .sink { _ in countdown() }
+    private func stopTimer() {
+        timerTask?.cancel()
+        timerTask = nil
     }
 
     private func startCountdown() {
@@ -188,6 +187,7 @@ extension ParkingSpotTimer {
         if remainingTime > 0 {
             parkingSpot.hasRunningTimer = true
         } else {
+            parkingSpot.hasRunningTimer = false
             isShowingWarning = true
         }
     }
@@ -203,14 +203,15 @@ extension ParkingSpotTimer {
     }
 
     private func clearTimer() {
+        stopTimer()
+
         parkingSpot.hasRunningTimer = false
         parkingSpot.timerEndTime = Calendar.current.startOfDay(for: .distantPast)
 
         duration = Calendar.current.startOfDay(for: .distantPast)
+        isLongTermParking = false
+        longTermParkingEndDate = .now
         remainingTime = 0
-
-        timerCancellable?.cancel()
-        timerCancellable = nil
 
         clearWarning()
     }
