@@ -46,7 +46,7 @@ struct ParkingSpotTimer: View {
                         Label("Parked time", systemImage: "clock")
                     }
 
-                    if remainingTime > 0 {
+                    if parkingSpot.hasRunningTimer {
                         LabeledContent {
                             Text(parkingSpot.timerEndTime, format: .dateTime)
                         } label: {
@@ -65,15 +65,9 @@ struct ParkingSpotTimer: View {
                             DatePicker(selection: $longTermParkingEndDate, in: parkingSpot.parkingStartTime...) {
                                 Label("End Date", systemImage: "calendar")
                             }
-                            .onChange(of: longTermParkingEndDate) { _, _ in
-                                clearWarning()
-                            }
                         } else {
                             DatePicker(selection: $duration, displayedComponents: [.hourAndMinute]) {
                                 Label("Duration", systemImage: "timer")
-                            }
-                            .onChange(of: duration) { _, _ in
-                                clearWarning()
                             }
                         }
                     }
@@ -98,9 +92,7 @@ struct ParkingSpotTimer: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { toolbarContent }
             .onAppear {
-                calculateRemainingTime()
-                startTimer()
-                clearWarning()
+                onAppear()
             }
             .onDisappear {
                 stopTimer()
@@ -123,86 +115,40 @@ extension ParkingSpotTimer {
 
         if parkingSpot.hasRunningTimer {
             ToolbarItem(placement: .primaryAction) {
-                Button("Clear", systemImage: "stop.fill", role: .cancel, action: clearTimer)
+                Button("Stop Meter", systemImage: "stop.fill", role: .cancel, action: resetMeter)
             }
         } else {
             ToolbarItem(placement: .primaryAction) {
-                Button("Start Timer", systemImage: "stopwatch", role: .confirm, action: startCountdown)
+                Button("Start Meter", systemImage: "stopwatch", role: .confirm, action: startMeter)
             }
         }
     }
 }
 
 extension ParkingSpotTimer {
-    private func startTimer() {
-        stopTimer()
-
-        guard parkingSpot.hasRunningTimer, remainingTime > 0 else { return }
-
-        timerTask = Task { @MainActor in
-            while !Task.isCancelled && parkingSpot.hasRunningTimer && remainingTime > 0 {
-                try? await Task.sleep(nanoseconds: 1000000000)
-                remainingTime -= 1
-            }
-        }
-    }
-
-    private func stopTimer() {
-        timerTask?.cancel()
-        timerTask = nil
-    }
-
-    private func startCountdown() {
-        let calendar = Calendar.current
-
-        var timerEndTime: Date?
-
-        if isLongTermParking {
-            timerEndTime = longTermParkingEndDate
+    private func onAppear() {
+        if parkingSpot.hasRunningTimer && parkingSpot.timerEndTime > .now {
+            startTimer()
         } else {
-            let hours: Int = calendar.component(.hour, from: duration)
-            let minutes: Int = calendar.component(.minute, from: duration)
-
-            guard hours > 0 || minutes > 0 else { return }
-
-            var dateComponents = DateComponents()
-            dateComponents.hour = hours
-            dateComponents.minute = minutes
-
-            timerEndTime = calendar.date(byAdding: dateComponents, to: parkingSpot.parkingStartTime)
+            resetMeter()
+        }
+    }
+    
+    private func startMeter() {
+        guard getTimerEndTime() > .now else {
+            isShowingWarning = true
+            return
         }
 
-        guard let timerEndTime else { return }
+        isShowingWarning = false
 
-        parkingSpot.timerEndTime = timerEndTime
+        parkingSpot.hasRunningTimer = true
+        parkingSpot.timerEndTime = getTimerEndTime()
 
-        calculateRemainingTime()
         startTimer()
     }
 
-    private func calculateRemainingTime() {
-        let timeDiff = getTimeDiff(from: .now, to: parkingSpot.timerEndTime)
-        remainingTime = TimeInterval(timeDiff.days * 86400 + timeDiff.hours * 3600 + timeDiff.minutes * 60 + timeDiff.seconds)
-
-        if remainingTime > 0 {
-            parkingSpot.hasRunningTimer = true
-        } else {
-            parkingSpot.hasRunningTimer = false
-            isShowingWarning = true
-        }
-    }
-
-    private func getTimeDiff(from: Date, to: Date) -> (days: Int, hours: Int, minutes: Int, seconds: Int) {
-        let timeDiffComponent = Calendar.current.dateComponents([.day, .hour, .minute, .second], from: from, to: to)
-        let days = timeDiffComponent.day ?? 0
-        let hours = timeDiffComponent.hour ?? 0
-        let minutes = timeDiffComponent.minute ?? 0
-        let seconds = timeDiffComponent.second ?? 0
-
-        return (days, hours, minutes, seconds)
-    }
-
-    private func clearTimer() {
+    private func resetMeter() {
         stopTimer()
 
         parkingSpot.hasRunningTimer = false
@@ -213,10 +159,46 @@ extension ParkingSpotTimer {
         longTermParkingEndDate = .now
         remainingTime = 0
 
-        clearWarning()
+        isShowingWarning = false
     }
 
-    private func clearWarning() {
-        isShowingWarning = false
+    private func getTimerEndTime() -> Date {
+        if isLongTermParking {
+            return longTermParkingEndDate
+        } else {
+            let hours: Int = Calendar.current.component(.hour, from: duration)
+            let minutes: Int = Calendar.current.component(.minute, from: duration)
+
+            var dateComponents = DateComponents()
+            dateComponents.hour = hours
+            dateComponents.minute = minutes
+
+            return Calendar.current.date(byAdding: dateComponents, to: parkingSpot.parkingStartTime) ?? parkingSpot.parkingStartTime
+        }
+    }
+
+    private func startTimer() {
+        stopTimer()
+
+        timerTask = Task { @MainActor in
+            var nextTick = ContinuousClock.now
+
+            while !Task.isCancelled && parkingSpot.hasRunningTimer {
+                remainingTime = parkingSpot.timerEndTime.timeIntervalSinceNow
+
+                guard remainingTime > 0 else {
+                    resetMeter()
+                    break
+                }
+
+                nextTick = nextTick.advanced(by: .seconds(1))
+                try? await Task.sleep(until: nextTick, clock: .continuous)
+            }
+        }
+    }
+
+    private func stopTimer() {
+        timerTask?.cancel()
+        timerTask = nil
     }
 }
