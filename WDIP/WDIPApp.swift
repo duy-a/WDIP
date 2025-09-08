@@ -11,6 +11,7 @@ import SwiftUI
 @main
 struct WDIPApp: App {
     @AppStorage("isViewedOnboarding") private var isViewedOnboarding: Bool = false
+    @State private var notificationManager: NotificationManager = .shared
 
     var body: some Scene {
         WindowGroup {
@@ -21,5 +22,6 @@ struct WDIPApp: App {
             }
         }
         .modelContainer(StoreProvider.shared.modelContainer)
+        .environment(notificationManager)
     }
 }
