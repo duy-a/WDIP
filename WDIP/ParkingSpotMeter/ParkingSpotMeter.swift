@@ -9,7 +9,7 @@ import SwiftUI
 
 struct ParkingSpotMeter: View {
     @Environment(\.dismiss) private var dismiss
-    @Environment(NotificationManager.self) private var notificationManager
+    @Environment(NotificationManager.self) var notificationManager
 
     @Bindable var parkingSpot: ParkingSpot
 
@@ -19,9 +19,11 @@ struct ParkingSpotMeter: View {
     @State var remainingTime: TimeInterval = 0
     @State var isLongTermParking: Bool = false
     @State var longTermParkingEndDate: Date = .now
-    @State var isShowingWarning: Bool = false
+    @State var showingWarning: Bool = false
 
     @State var toggleReminder: Bool = false
+    @State var reminderTimeOption: ReminderTimeOption = .before5min
+    @State var showingPermissionDeniedAlert: Bool = false
 
     var body: some View {
         NavigationStack {
@@ -29,9 +31,9 @@ struct ParkingSpotMeter: View {
                 meterTimer
                 meterReminder
             }
-            .navigationTitle("Timer & Reminder")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar { toolbarContent }
+            .sheetToolbar("Timer & Reminder") {
+                toolbarContent
+            }
             .onAppear {
                 onAppear()
             }
@@ -50,10 +52,6 @@ struct ParkingSpotMeter: View {
 extension ParkingSpotMeter {
     @ToolbarContentBuilder
     var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .cancellationAction) {
-            Button("Cancel", systemImage: "xmark", role: .close, action: { dismiss() })
-        }
-
         if parkingSpot.hasRunningTimer {
             ToolbarItem(placement: .primaryAction) {
                 Button("Stop Meter", systemImage: "stop.fill", role: .cancel, action: stopAction)
@@ -71,15 +69,17 @@ extension ParkingSpotMeter {
         if parkingSpot.hasRunningTimer, parkingSpot.timerEndTime > .now {
             startTimer()
         } else {
-            resetMeter()
+            stopAction()
         }
     }
-    
+
     func startAction() {
         startMeter()
+        scheduleReminder()
     }
-    
+
     func stopAction() {
         resetMeter()
+        clearReminder()
     }
 }

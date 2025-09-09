@@ -22,6 +22,21 @@ extension ParkingSpotMeter {
         }
     }
 
+    var timerEndTime: Date {
+        if isLongTermParking {
+            return longTermParkingEndDate
+        } else {
+            let hours: Int = Calendar.current.component(.hour, from: duration)
+            let minutes: Int = Calendar.current.component(.minute, from: duration)
+
+            var dateComponents = DateComponents()
+            dateComponents.hour = hours
+            dateComponents.minute = minutes
+
+            return Calendar.current.date(byAdding: dateComponents, to: parkingSpot.parkingStartTime) ?? parkingSpot.parkingStartTime
+        }
+    }
+
     @ViewBuilder
     var meterTimer: some View {
         Section {
@@ -47,7 +62,7 @@ extension ParkingSpotMeter {
                 Toggle("Long-term parking", systemImage: "parkingsign.circle", isOn: $isLongTermParking)
 
                 if isLongTermParking {
-                    DatePicker(selection: $longTermParkingEndDate, in: parkingSpot.parkingStartTime...) {
+                    DatePicker(selection: $longTermParkingEndDate, in: .now...) {
                         Label("End Date", systemImage: "calendar")
                     }
                 } else {
@@ -61,7 +76,7 @@ extension ParkingSpotMeter {
         } footer: {
             VStack(alignment: .leading) {
                 Text("The timer always starts from your parking time.")
-                if isShowingWarning {
+                if showingWarning {
                     Text("Selected duration has already passed.")
                         .foregroundStyle(.red)
                 }
@@ -72,15 +87,15 @@ extension ParkingSpotMeter {
 
 extension ParkingSpotMeter {
     func startMeter() {
-        guard getTimerEndTime() > .now else {
-            isShowingWarning = true
+        guard timerEndTime > .now else {
+            showingWarning = true
             return
         }
 
-        isShowingWarning = false
+        showingWarning = false
 
         parkingSpot.hasRunningTimer = true
-        parkingSpot.timerEndTime = getTimerEndTime()
+        parkingSpot.timerEndTime = timerEndTime
 
         startTimer()
     }
@@ -96,22 +111,7 @@ extension ParkingSpotMeter {
         longTermParkingEndDate = .now
         remainingTime = 0
 
-        isShowingWarning = false
-    }
-
-    func getTimerEndTime() -> Date {
-        if isLongTermParking {
-            return longTermParkingEndDate
-        } else {
-            let hours: Int = Calendar.current.component(.hour, from: duration)
-            let minutes: Int = Calendar.current.component(.minute, from: duration)
-
-            var dateComponents = DateComponents()
-            dateComponents.hour = hours
-            dateComponents.minute = minutes
-
-            return Calendar.current.date(byAdding: dateComponents, to: parkingSpot.parkingStartTime) ?? parkingSpot.parkingStartTime
-        }
+        showingWarning = false
     }
 
     func startTimer() {
@@ -125,6 +125,7 @@ extension ParkingSpotMeter {
 
                 guard remainingTime > 0 else {
                     resetMeter()
+                    clearReminder()
                     break
                 }
 
