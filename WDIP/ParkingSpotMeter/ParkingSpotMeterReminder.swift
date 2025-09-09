@@ -7,12 +7,12 @@
 
 import SwiftUI
 
-enum ReminderTimeOption: CaseIterable, Identifiable {
-    case before5min
-    case before10min
-    case before15min
-    case atTheEnd
-    case custom
+enum ReminderTimeOption: Int, CaseIterable, Identifiable {
+    case before5min = 5
+    case before10min = 10
+    case before15min = 15
+    case atTheEnd = 0
+    case custom = -999
 
     var id: Self { self }
 
@@ -28,7 +28,7 @@ enum ReminderTimeOption: CaseIterable, Identifiable {
 }
 
 extension ParkingSpotMeter {
-    var customRemiderDateEnd: Date {
+    var latestReminderDate: Date {
         if parkingSpot.timerEndTime == Calendar.current.startOfDay(for: .distantPast) {
             if timerEndTime > .now {
                 return timerEndTime
@@ -37,6 +37,27 @@ extension ParkingSpotMeter {
             }
         } else {
             return parkingSpot.timerEndTime
+        }
+    }
+
+    var validReminderTime: Bool {
+        guard toggleReminder, reminderTimeOption != .custom else { return true }
+
+        let reminderTime = Calendar.current.date(byAdding: .minute,
+                                                 value: -reminderTimeOption.rawValue,
+                                                 to: latestReminderDate)!
+
+        return reminderTime > .now
+    }
+
+    var notificationBodyContent: String {
+        switch reminderTimeOption {
+        case .before5min, .before10min, .before15min:
+            return "Your parking meter will expire in \(reminderTimeOption.rawValue) minutes."
+        case .atTheEnd:
+            return "Your parking meter has expired."
+        case .custom:
+            return "Your parking meter will expire in \(formattedRemainingTime)."
         }
     }
 
@@ -55,7 +76,7 @@ extension ParkingSpotMeter {
                 }
 
                 if reminderTimeOption == .custom {
-                    DatePicker(selection: $parkingSpot.reminderTime, in: .now ... customRemiderDateEnd) {
+                    DatePicker(selection: $parkingSpot.reminderTime, in: .now ... latestReminderDate) {
                         Label("", systemImage: "calendar")
                     }
                 }
@@ -80,6 +101,13 @@ extension ParkingSpotMeter {
 //            Button("Cler") {
 //                notificationManager.cancelAllNotifications()
 //            }
+        } header: {
+            Text("Reminder")
+        } footer: {
+            if !validReminderTime {
+                Text("Reminder cannot be set in the past")
+                    .foregroundStyle(.red)
+            }
         }
         .onChange(of: toggleReminder) { _, newValue in
             newValue ? requestNotificationPermission() : clearReminder()
@@ -96,6 +124,7 @@ extension ParkingSpotMeter {
 extension ParkingSpotMeter {
     func scheduleReminder() {
         guard toggleReminder,
+              validReminderTime,
               parkingSpot.hasRunningTimer,
               parkingSpot.reminderTime > parkingSpot.parkingStartTime,
               parkingSpot.reminderTime <= timerEndTime
@@ -106,9 +135,16 @@ extension ParkingSpotMeter {
 
         Task {
             parkingSpot.hasReminder = true
+
+            if reminderTimeOption != .custom {
+                parkingSpot.reminderTime = Calendar.current.date(byAdding: .minute,
+                                                                 value: -reminderTimeOption.rawValue,
+                                                                 to: latestReminderDate)!
+            }
+
             await notificationManager.scheduleNotification(id: generateNotificationID(),
                                                            title: parkingSpot.vehicle?.name ?? "Your vehicle",
-                                                           body: "CCCCCCC",
+                                                           body: notificationBodyContent,
                                                            date: parkingSpot.reminderTime)
         }
     }
