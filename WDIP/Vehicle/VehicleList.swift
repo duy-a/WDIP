@@ -33,10 +33,8 @@ struct VehicleList: View {
                     }
                 }
             }
-            .navigationTitle("Your Vehicles")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                toolbarButtons()
+            .sheetToolbar("Your Vehicles") {
+                toolbarContent
             }
             .sheet(isPresented: $isShowingNewVehicleForm) {
                 VehicleForm()
@@ -56,13 +54,7 @@ struct VehicleList: View {
 
 extension VehicleList {
     @ToolbarContentBuilder
-    func toolbarButtons() -> some ToolbarContent {
-        if !vehicles.isEmpty {
-            ToolbarItem(placement: .cancellationAction) {
-                Button("Close", systemImage: "xmark", role: .close, action: { dismiss() })
-            }
-        }
-
+    var toolbarContent: some ToolbarContent {
         ToolbarItem(placement: .primaryAction) {
             Button("Add New Vehicle", systemImage: "plus", role: .confirm, action: addNewVehicle)
         }

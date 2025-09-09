@@ -9,8 +9,6 @@ import SwiftData
 import SwiftUI
 
 struct ParkingSpotListFilters: View {
-    @Environment(\.dismiss) private var dismiss
-
     @Query(sort: \Vehicle.name) private var vehicles: [Vehicle]
 
     @Binding var startDateTimeFilter: Date
@@ -56,10 +54,8 @@ struct ParkingSpotListFilters: View {
                     }
                 }
             }
-            .navigationTitle("Filter")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                toolbarContent()
+            .sheetToolbar("Filter") {
+                toolbarContent
             }
         }
     }
@@ -71,11 +67,7 @@ struct ParkingSpotListFilters: View {
 
 extension ParkingSpotListFilters {
     @ToolbarContentBuilder
-    func toolbarContent() -> some ToolbarContent {
-        ToolbarItem(placement: .cancellationAction) {
-            Button("Close", systemImage: "xmark", role: .close, action: { dismiss() })
-        }
-
+    var toolbarContent: some ToolbarContent {
         ToolbarItem(placement: .topBarTrailing) {
             Button("Reset Filters", systemImage: "arrow.trianglehead.counterclockwise", action: triggerResetFilters)
         }

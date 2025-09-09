@@ -9,8 +9,6 @@ import SwiftData
 import SwiftUI
 
 struct ParkingSpotList: View {
-    @Environment(\.dismiss) private var dismiss
-
     @Query(sort: \ParkingSpot.parkingStartTime, order: .reverse) var parkingSpots: [ParkingSpot]
 
     @Binding var trackingVehicle: Vehicle
@@ -49,10 +47,8 @@ struct ParkingSpotList: View {
                 }
             }
             .searchable(text: $searchText, placement: .toolbar, prompt: "Address")
-            .navigationTitle("Parking History")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                toolbarContent()
+            .sheetToolbar("Parking History") {
+                toolbarContent
             }
             .sheet(item: $selectedParkingSpot) { parkingSpot in
                 ParkingSpotForm(parkingSpot: parkingSpot)
@@ -76,11 +72,7 @@ struct ParkingSpotList: View {
 
 extension ParkingSpotList {
     @ToolbarContentBuilder
-    func toolbarContent() -> some ToolbarContent {
-        ToolbarItem(placement: .cancellationAction) {
-            Button("Close", systemImage: "xmark", role: .close, action: { dismiss() })
-        }
-
+    var toolbarContent: some ToolbarContent {
         ToolbarItem(placement: .bottomBar) {
             Button("Filter by", systemImage: "line.3.horizontal.decrease", action: showFilters)
         }

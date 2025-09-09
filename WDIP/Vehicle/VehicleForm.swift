@@ -52,8 +52,8 @@ struct VehicleForm: View {
                     IconPicker(selectedIcon: $selectedIcon)
                 }
             }
-            .toolbar {
-                toolbarButtons()
+            .sheetToolbar("Vehicle Info") {
+                toolbarContent
             }
             .alert("Are you sure?", isPresented: $isShowingDeleteAlert) {
                 Button("Cancel", role: .cancel) {}
@@ -72,11 +72,7 @@ struct VehicleForm: View {
 
 extension VehicleForm {
     @ToolbarContentBuilder
-    func toolbarButtons() -> some ToolbarContent {
-        ToolbarItem(placement: .cancellationAction) {
-            Button("Cancel", systemImage: "xmark", role: .cancel, action: { dismiss() })
-        }
-
+    var toolbarContent: some ToolbarContent {
         if vehicle != nil {
             ToolbarItem(placement: .topBarTrailing) {
                 Button("Delete", systemImage: "trash", role: .destructive, action: { isShowingDeleteAlert = true })
