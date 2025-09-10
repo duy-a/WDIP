@@ -72,6 +72,9 @@ struct ParkingMap: View {
                     trackFirstVehicle(vehicles: newVehicles)
                 }
             }
+            .onChange(of: trackingVehicle) { _, _ in
+                starTimer()
+            }
             .onChange(of: trackingVehicle.activeParkingSpot?.hasRunningTimer) { _, _ in
                 starTimer()
             }
@@ -184,7 +187,11 @@ private extension ParkingMap {
 
     private func starTimer() {
         guard let parkingSpot = trackingVehicle.activeParkingSpot,
-              parkingSpot.hasRunningTimer else { return }
+              parkingSpot.hasRunningTimer
+        else {
+            timerRemainingTime = 0
+            return
+        }
 
         timerTask?.cancel()
         timerTask = nil
