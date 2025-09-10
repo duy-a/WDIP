@@ -22,15 +22,8 @@ struct ParkingMap: View {
     @State private var trackingVehicle: Vehicle = .init()
     @State private var sheetView: SheetView? = nil
 
-    @State var timerTask: Task<Void, Never>? = nil
-    @State private var timerRemainingTime: TimeInterval = 0
-
     var currentParkingSpotCoordinates: CLLocationCoordinate2D? {
         trackingVehicle.activeParkingSpot?.coordinates
-    }
-
-    var formattedRemainingTime: String {
-        TimerManager.formatRemainingTime(timerRemainingTime)
     }
 
     var body: some View {
@@ -59,6 +52,9 @@ struct ParkingMap: View {
             }
             .onAppear {
                 onStart()
+                if let parkingSpot = trackingVehicle.activeParkingSpot, parkingSpot.hasRunningTimer {
+                    parkingSpot.starTimer()
+                }
             }
             .toolbar {
                 menu
@@ -71,12 +67,6 @@ struct ParkingMap: View {
                 if oldVehicles.isEmpty && !newVehicles.isEmpty || !newVehicles.contains(trackingVehicle) {
                     trackFirstVehicle(vehicles: newVehicles)
                 }
-            }
-            .onChange(of: trackingVehicle) { _, _ in
-                starTimer()
-            }
-            .onChange(of: trackingVehicle.activeParkingSpot?.hasRunningTimer) { _, _ in
-                starTimer()
             }
         }
     }
@@ -134,11 +124,11 @@ private extension ParkingMap {
             ToolbarSpacer(.flexible, placement: .bottomBar)
 
             ToolbarItem(placement: .bottomBar) {
-                if timerRemainingTime > 0 {
+                if let parkingSpot = trackingVehicle.activeParkingSpot, parkingSpot.timerRemainingTime > 0 {
                     Button(action: showParkingSpotTimer) {
                         HStack {
                             Image(systemName: "powermeter")
-                            Text(formattedRemainingTime)
+                            Text(TimerManager.formatRemainingTime(parkingSpot.timerRemainingTime))
                         }
                     }
                 } else {
@@ -176,36 +166,13 @@ private extension ParkingMap {
 
     private func showParkingSpotTimer() {
         guard let parkingSpot = trackingVehicle.activeParkingSpot else { return }
+//        sheetView = SheetView(view: ParkingSpotMeter(parkingSpot: parkingSpot))
         sheetView = SheetView(view: ParkingSpotMeter(parkingSpot: parkingSpot))
     }
 
     private func onStart() {
         locationManager.requestWhenInUseAuthorization()
         trackFirstVehicle(vehicles: vehicles)
-        starTimer()
-    }
-
-    private func starTimer() {
-        guard let parkingSpot = trackingVehicle.activeParkingSpot,
-              parkingSpot.hasRunningTimer
-        else {
-            timerRemainingTime = 0
-            return
-        }
-
-        timerTask?.cancel()
-        timerTask = nil
-
-        timerTask = TimerManager.starTimer(
-            endTime: parkingSpot.timerEndTime,
-            onTick: { remaining in
-                timerRemainingTime = remaining
-            },
-            onComplete: {
-                timerTask?.cancel()
-                timerTask = nil
-            }
-        )
     }
 
     private func trackFirstVehicle(vehicles: [Vehicle]) {

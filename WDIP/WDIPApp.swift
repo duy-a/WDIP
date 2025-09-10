@@ -10,6 +10,8 @@ import SwiftUI
 
 @main
 struct WDIPApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+
     @AppStorage("isViewedOnboarding") private var isViewedOnboarding: Bool = false
     @State private var notificationManager: NotificationManager = .shared
 
