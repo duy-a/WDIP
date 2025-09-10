@@ -18,11 +18,12 @@ final class ParkingSpot {
     var parkingStartTime: Date = Date.now.roundedToNearestMinute
     var parkingEndTime: Date = Date.now.roundedToNearestMinute
     var notes: String = ""
+
     var hasRunningTimer: Bool = false
-    var timerEndTime: Date = Calendar.current.startOfDay(for: .distantPast)
-    var hasReminder: Bool = false
-    var reminderTime: Date = Date.now
-    var reminderOption: Int = ReminderTimeOption.before5min.rawValue
+    var timerEndTime: Date?
+
+    @Attribute(.ephemeral) var timerRemainingTime: TimeInterval = 0
+    @Transient var timerTask: Task<Void, Never>? = nil
 
     var vehicle: Vehicle?
 
