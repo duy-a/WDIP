@@ -22,6 +22,7 @@ final class ParkingSpot {
     var timerEndTime: Date = Calendar.current.startOfDay(for: .distantPast)
     var hasReminder: Bool = false
     var reminderTime: Date = Date.now
+    var reminderOption: Int = ReminderTimeOption.before5min.rawValue
 
     var vehicle: Vehicle?
 

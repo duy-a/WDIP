@@ -41,7 +41,6 @@ struct ParkingSpotMeter: View {
                 stopTimer()
             }
         }
-        .presentationDetents([.medium, .large])
     }
 }
 

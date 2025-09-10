@@ -122,6 +122,7 @@ extension ParkingSpotMeter {
 
             while !Task.isCancelled && parkingSpot.hasRunningTimer {
                 remainingTime = parkingSpot.timerEndTime.timeIntervalSinceNow
+                clearReminderIfDelivered()
 
                 guard remainingTime > 0 else {
                     resetMeter()

@@ -60,6 +60,22 @@ final class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
         }
     }
 
+    func isDelivered(id: String) async -> Bool {
+        await withCheckedContinuation { continuation in
+            UNUserNotificationCenter.current().getDeliveredNotifications { delivered in
+                if delivered.contains(where: { $0.request.identifier == id }) {
+                    continuation.resume(returning: true)
+                    return
+                }
+
+                UNUserNotificationCenter.current().getPendingNotificationRequests { pending in
+                    let stillPending = pending.contains { $0.identifier == id }
+                    continuation.resume(returning: !stillPending)
+                }
+            }
+        }
+    }
+
     func cancelNotification(id: String) {
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [id])
     }

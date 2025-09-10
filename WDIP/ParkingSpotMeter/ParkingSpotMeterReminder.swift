@@ -74,40 +74,29 @@ extension ParkingSpotMeter {
                 } label: {
                     Label("Time", systemImage: "clock.badge.exclamationmark")
                 }
+                .disabled(parkingSpot.hasReminder)
 
                 if reminderTimeOption == .custom {
                     DatePicker(selection: $parkingSpot.reminderTime, in: .now ... latestReminderDate) {
                         Label("", systemImage: "calendar")
                     }
+                    .disabled(parkingSpot.hasReminder)
                 }
             }
 
             if parkingSpot.hasRunningTimer && !parkingSpot.hasReminder && toggleReminder {
                 Button("Set reminder", systemImage: "alarm", action: scheduleReminder)
             }
-
-//            Button("Print") {
-//                UNUserNotificationCenter.current().getPendingNotificationRequests { requests in
-//                    for request in requests {
-//                        print("⏰ Pending notification:")
-//                        print("ID: \(request.identifier)")
-//                        print("Title: \(request.content.title)")
-//                        print("Body: \(request.content.body)")
-//                        print("Trigger: \(String(describing: request.trigger))")
-//                    }
-//                }
-//            }
-//
-//            Button("Cler") {
-//                notificationManager.cancelAllNotifications()
-//            }
         } header: {
             Text("Reminder")
         } footer: {
-            if !validReminderTime {
+            if !validReminderTime && !parkingSpot.hasReminder {
                 Text("Reminder cannot be set in the past")
                     .foregroundStyle(.red)
             }
+        }
+        .onAppear {
+            handleOnAppear()
         }
         .onChange(of: toggleReminder) { _, newValue in
             newValue ? requestNotificationPermission() : clearReminder()
@@ -127,7 +116,7 @@ extension ParkingSpotMeter {
               validReminderTime,
               parkingSpot.hasRunningTimer,
               parkingSpot.reminderTime > parkingSpot.parkingStartTime,
-              parkingSpot.reminderTime <= timerEndTime
+              parkingSpot.reminderTime <= timerEndTime || parkingSpot.reminderTime <= parkingSpot.timerEndTime
         else {
             clearReminder()
             return
@@ -135,6 +124,7 @@ extension ParkingSpotMeter {
 
         Task {
             parkingSpot.hasReminder = true
+            parkingSpot.reminderOption = reminderTimeOption.rawValue
 
             if reminderTimeOption != .custom {
                 parkingSpot.reminderTime = Calendar.current.date(byAdding: .minute,
@@ -151,10 +141,27 @@ extension ParkingSpotMeter {
 
     func clearReminder() {
         toggleReminder = false
+        reminderTimeOption = .before5min
 
         parkingSpot.hasReminder = false
         parkingSpot.reminderTime = .now
+        parkingSpot.reminderOption = ReminderTimeOption.before5min.rawValue
+
         notificationManager.cancelNotification(id: generateNotificationID())
+    }
+
+    func clearReminderIfDelivered() {
+        guard parkingSpot.hasReminder else { return }
+        Task {
+            if await notificationManager.isDelivered(id: generateNotificationID()) {
+                clearReminder()
+            }
+        }
+    }
+
+    private func handleOnAppear() {
+        toggleReminder = parkingSpot.hasReminder
+        reminderTimeOption = ReminderTimeOption(rawValue: parkingSpot.reminderOption) ?? .before5min
     }
 
     private func generateNotificationID() -> String {
