@@ -11,11 +11,11 @@ struct Feedback: View {
     var body: some View {
         List {
             Section {
-                Text("Hi, I am Duy Anh. I run WDIP: Where Did I Park? with no employees, no VC funding and a sustainable work-life balance. Feedback is always welcomed.")
+                Text("WDIP: Where Did I Park? is run with no employees (just 1 person), no VC funding and a sustainable work-life balance. Feedback is always welcomed.")
             }
 
             Section("App") {
-                ButtonExternalLink(title: "Twitter / X", link: Constants.APP_TWITTER_LINK)
+//                ButtonExternalLink(title: "Twitter / X", link: Constants.APP_TWITTER_LINK)
 //                ButtonExternalLink(title: "Mastadon", link: Constants.TERMS_LINK)
                 ButtonExternalLink(title: "Send Email", link: "mailto:\(Constants.SUPPORT_EMAIL)")
             }
