@@ -15,9 +15,10 @@ extension ParkingSpot {
 
         timerTask = TimerManager.starTimer(endTime: endTime) { remainingTime in
             self.timerRemainingTime = remainingTime
-
+            self.clearReminderIfDelivered()
         } onComplete: {
             self.stopTimer()
+            self.cancelReminder()
         }
     }
 

@@ -8,15 +8,24 @@
 import SwiftUI
 
 struct ParkingSpotMeter: View {
+    @Environment(NotificationManager.self) var notificationManager
+
     @Bindable var parkingSpot: ParkingSpot
 
     @State var timerEndTime: Date = Calendar.current.startOfDay(for: .now)
     @State var isLongTermParking: Bool = false
 
+    @State var enabledReminder: Bool = false
+    @State var reminderOption: ParkingSpot.ReminderTimeOption = .before5min
+    @State var reminderTime: Date = .now
+    
+    @State var showingPermissionDeniedAlert: Bool = false
+
     var body: some View {
         NavigationStack {
             Form {
                 timerSection
+                reminderSection
             }
             .sheetToolbar("Meter & Reminder") {
                 toolbarContent
@@ -45,9 +54,11 @@ extension ParkingSpotMeter {
 extension ParkingSpotMeter {
     private func startMeter() {
         startTimer()
+        scheduleReminder()
     }
 
     private func stopMeter() {
         stopTimer()
+        cancelReminder()
     }
 }

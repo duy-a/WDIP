@@ -52,6 +52,9 @@ extension ParkingSpotMeter {
         .onAppear {
             parkingSpot.starTimer()
         }
+        .onChange(of: parkingSpot.hasRunningTimer) { _, newValue in
+            if !newValue { isLongTermParking = false }
+        }
     }
 }
 
@@ -77,6 +80,9 @@ extension ParkingSpotMeter {
             } else {
                 Label("Duration", systemImage: "timer")
             }
+        }
+        .onChange(of: timerEndTime) { _, _ in
+            parkingSpot.timerEndTime = calculatedTimerEnd
         }
     }
 }
