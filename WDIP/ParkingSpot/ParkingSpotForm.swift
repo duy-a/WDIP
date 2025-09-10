@@ -60,8 +60,8 @@ struct ParkingSpotForm: View {
                     Text("Duration: \(parkingSpot.parkingDuration)")
                 }
             }
-            .toolbar {
-                toolbarContent()
+            .sheetToolbar("Parking Info") {
+                toolbarContent
             }
             .alert("Are you sure?", isPresented: $isShowingDeleteAlert) {
                 Button("Cancel", role: .cancel) {}
@@ -78,11 +78,7 @@ struct ParkingSpotForm: View {
 
 extension ParkingSpotForm {
     @ToolbarContentBuilder
-    func toolbarContent() -> some ToolbarContent {
-        ToolbarItem(placement: .topBarLeading) {
-            Button("Cancel", systemImage: "xmark", role: .cancel, action: { dismiss() })
-        }
-
+    var toolbarContent: some ToolbarContent {
         if !parkingSpot.isCurrentParkingSpot {
             ToolbarItem(placement: .topBarTrailing) {
                 Button("Delete", systemImage: "trash", role: .destructive, action: { isShowingDeleteAlert = true })

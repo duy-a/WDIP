@@ -32,22 +32,11 @@ struct Settings: View {
                     }
                 }
             }
-            .toolbar {
-                toolbarContent()
-            }
+            .sheetToolbar("Settings")
         }
     }
 }
 
 #Preview {
     Settings()
-}
-
-extension Settings {
-    @ToolbarContentBuilder
-    func toolbarContent() -> some ToolbarContent {
-        ToolbarItem(placement: .cancellationAction) {
-            Button("Close", systemImage: "xmark", action: { dismiss() })
-        }
-    }
 }

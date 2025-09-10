@@ -20,14 +20,17 @@ struct ParkingMap: View {
     @State private var mapCenterCoordinates: CLLocationCoordinate2D? = nil
 
     @State private var trackingVehicle: Vehicle = .init()
-    @State private var selectedParkingSpot: ParkingSpot? = nil
+    @State private var sheetView: SheetView? = nil
 
-    @State private var isShowingVehicleList: Bool = false
-    @State private var isShowingParkingSpotHistoryList: Bool = false
-    @State private var isShowingSettings: Bool = false
+    @State var timerTask: Task<Void, Never>? = nil
+    @State private var timerRemainingTime: TimeInterval = 0
 
     var currentParkingSpotCoordinates: CLLocationCoordinate2D? {
         trackingVehicle.activeParkingSpot?.coordinates
+    }
+
+    var formattedRemainingTime: String {
+        TimerManager.formatRemainingTime(timerRemainingTime)
     }
 
     var body: some View {
@@ -61,22 +64,16 @@ struct ParkingMap: View {
                 menu
                 parkedActions
             }
-            .sheet(isPresented: $isShowingVehicleList) {
-                VehicleList(trackingVehicle: $trackingVehicle)
-            }
-            .sheet(isPresented: $isShowingParkingSpotHistoryList) {
-                ParkingSpotList(trackingVehicle: $trackingVehicle)
-            }
-            .sheet(isPresented: $isShowingSettings, content: {
-                Settings()
-            })
-            .sheet(item: $selectedParkingSpot) { parkingSpot in
-                ParkingSpotForm(parkingSpot: parkingSpot)
+            .sheet(item: $sheetView) { sheet in
+                sheet.view
             }
             .onChange(of: vehicles) { oldVehicles, newVehicles in
                 if oldVehicles.isEmpty && !newVehicles.isEmpty || !newVehicles.contains(trackingVehicle) {
                     trackFirstVehicle(vehicles: newVehicles)
                 }
+            }
+            .onChange(of: trackingVehicle.activeParkingSpot?.hasRunningTimer) { _, _ in
+                starTimer()
             }
         }
     }
@@ -113,13 +110,11 @@ private extension ParkingMap {
             Menu {
                 Button("Vehicles", systemImage: "car.2", action: showVehicleList)
                 Button("Parking History", systemImage: "parkingsign.square", action: showParkingHistory)
-                Button("Settings", systemImage: "gearshape", action: showSettings )
+                Button("Settings", systemImage: "gearshape", action: showSettings)
             } label: {
                 Label("Menu", systemImage: "list.bullet")
             }
         }
-
-        ToolbarSpacer(.flexible, placement: .bottomBar)
     }
 }
 
@@ -133,6 +128,21 @@ private extension ParkingMap {
                 Button("Center on the Parking Spot", systemImage: trackingVehicle.icon, action: centerOnParkedSpot)
             }
 
+            ToolbarSpacer(.flexible, placement: .bottomBar)
+
+            ToolbarItem(placement: .bottomBar) {
+                if timerRemainingTime > 0 {
+                    Button(action: showParkingSpotTimer) {
+                        HStack {
+                            Image(systemName: "powermeter")
+                            Text(formattedRemainingTime)
+                        }
+                    }
+                } else {
+                    Button("Timers & Reminders", systemImage: "powermeter", action: showParkingSpotTimer)
+                }
+            }
+
             ToolbarSpacer(.fixed, placement: .bottomBar)
 
             ToolbarItemGroup(placement: .bottomBar) {
@@ -144,34 +154,60 @@ private extension ParkingMap {
 }
 
 private extension ParkingMap {
-    func showVehicleList() {
-        isShowingVehicleList = true
+    private func showVehicleList() {
+        sheetView = SheetView(view: VehicleList(trackingVehicle: $trackingVehicle))
     }
 
-    func showParkingHistory() {
-        isShowingParkingSpotHistoryList = true
-    }
-    
-    func showSettings() {
-        isShowingSettings = true
+    private func showParkingHistory() {
+        sheetView = SheetView(view: ParkingSpotList(trackingVehicle: $trackingVehicle))
     }
 
-    func showCurrentParkingSpotInfo() {
-        selectedParkingSpot = trackingVehicle.activeParkingSpot
+    private func showSettings() {
+        sheetView = SheetView(view: Settings())
     }
 
-    func onStart() {
+    private func showCurrentParkingSpotInfo() {
+        guard let parkingSpot = trackingVehicle.activeParkingSpot else { return }
+        sheetView = SheetView(view: ParkingSpotForm(parkingSpot: parkingSpot))
+    }
+
+    private func showParkingSpotTimer() {
+        guard let parkingSpot = trackingVehicle.activeParkingSpot else { return }
+        sheetView = SheetView(view: ParkingSpotMeter(parkingSpot: parkingSpot))
+    }
+
+    private func onStart() {
         locationManager.requestWhenInUseAuthorization()
         trackFirstVehicle(vehicles: vehicles)
+        starTimer()
     }
 
-    func trackFirstVehicle(vehicles: [Vehicle]) {
+    private func starTimer() {
+        guard let parkingSpot = trackingVehicle.activeParkingSpot,
+              parkingSpot.hasRunningTimer else { return }
+
+        timerTask?.cancel()
+        timerTask = nil
+
+        timerTask = TimerManager.starTimer(
+            endTime: parkingSpot.timerEndTime,
+            onTick: { remaining in
+                timerRemainingTime = remaining
+            },
+            onComplete: {
+                timerTask?.cancel()
+                timerTask = nil
+            }
+        )
+    }
+
+    private func trackFirstVehicle(vehicles: [Vehicle]) {
         guard let vehicle = vehicles.first else { return showVehicleList() }
 
         trackingVehicle = vehicle
     }
 
-    func parkHere() {
+    private func parkHere() {
         guard let mapCenterCoordinates else { return }
 
         let parkingSpot = ParkingSpot(coordinates: mapCenterCoordinates)
@@ -182,16 +218,14 @@ private extension ParkingMap {
         modelContext.insert(parkingSpot)
     }
 
-    func unpark() {
+    private func unpark() {
         trackingVehicle.activeParkingSpot?.parkingEndTime = .now
         trackingVehicle.isParked = false
     }
 
-    func centerOnParkedSpot() {
+    private func centerOnParkedSpot() {
         guard let currentParkingSpotCoordinates else { return }
 
-        withAnimation {
-            mapCameraPosition = .camera(MapCamera(centerCoordinate: currentParkingSpotCoordinates, distance: 3500))
-        }
+        mapCameraPosition = .camera(MapCamera(centerCoordinate: currentParkingSpotCoordinates, distance: 3500))
     }
 }
