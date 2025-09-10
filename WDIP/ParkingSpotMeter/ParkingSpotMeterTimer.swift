@@ -9,17 +9,7 @@ import SwiftUI
 
 extension ParkingSpotMeter {
     var formattedRemainingTime: String {
-        let totalSeconds = max(Int(remainingTime), 0)
-        let days = totalSeconds / 86400
-        let hours = (totalSeconds % 86400) / 3600
-        let minutes = (totalSeconds % 3600) / 60
-        let seconds = totalSeconds % 60
-
-        if days > 0 {
-            return String(format: "%dd %02d:%02d:%02d", days, hours, minutes, seconds)
-        } else {
-            return String(format: "%02d:%02d:%02d", hours, minutes, seconds)
-        }
+        TimerManager.formatRemainingTime(remainingTime)
     }
 
     var timerEndTime: Date {
@@ -117,23 +107,17 @@ extension ParkingSpotMeter {
     func startTimer() {
         stopTimer()
 
-        timerTask = Task { @MainActor in
-            var nextTick = ContinuousClock.now
-
-            while !Task.isCancelled && parkingSpot.hasRunningTimer {
-                remainingTime = parkingSpot.timerEndTime.timeIntervalSinceNow
+        timerTask = TimerManager.starTimer(
+            endTime: parkingSpot.timerEndTime,
+            onTick: { remaining in
+                remainingTime = remaining
                 clearReminderIfDelivered()
-
-                guard remainingTime > 0 else {
-                    resetMeter()
-                    clearReminder()
-                    break
-                }
-
-                nextTick = nextTick.advanced(by: .seconds(1))
-                try? await Task.sleep(until: nextTick, clock: .continuous)
+            },
+            onComplete: {
+                resetMeter()
+                clearReminder()
             }
-        }
+        )
     }
 
     func stopTimer() {

@@ -22,8 +22,15 @@ struct ParkingMap: View {
     @State private var trackingVehicle: Vehicle = .init()
     @State private var sheetView: SheetView? = nil
 
+    @State var timerTask: Task<Void, Never>? = nil
+    @State private var timerRemainingTime: TimeInterval = 0
+
     var currentParkingSpotCoordinates: CLLocationCoordinate2D? {
         trackingVehicle.activeParkingSpot?.coordinates
+    }
+
+    var formattedRemainingTime: String {
+        TimerManager.formatRemainingTime(timerRemainingTime)
     }
 
     var body: some View {
@@ -64,6 +71,9 @@ struct ParkingMap: View {
                 if oldVehicles.isEmpty && !newVehicles.isEmpty || !newVehicles.contains(trackingVehicle) {
                     trackFirstVehicle(vehicles: newVehicles)
                 }
+            }
+            .onChange(of: trackingVehicle.activeParkingSpot?.hasRunningTimer) { _, _ in
+                starTimer()
             }
         }
     }
@@ -121,7 +131,16 @@ private extension ParkingMap {
             ToolbarSpacer(.flexible, placement: .bottomBar)
 
             ToolbarItem(placement: .bottomBar) {
-                Button("Timers & Reminders", systemImage: "alarm", action: showParkingSpotTimer)
+                if timerRemainingTime > 0 {
+                    Button(action: showParkingSpotTimer) {
+                        HStack {
+                            Image(systemName: "powermeter")
+                            Text(formattedRemainingTime)
+                        }
+                    }
+                } else {
+                    Button("Timers & Reminders", systemImage: "powermeter", action: showParkingSpotTimer)
+                }
             }
 
             ToolbarSpacer(.fixed, placement: .bottomBar)
@@ -160,6 +179,26 @@ private extension ParkingMap {
     private func onStart() {
         locationManager.requestWhenInUseAuthorization()
         trackFirstVehicle(vehicles: vehicles)
+        starTimer()
+    }
+
+    private func starTimer() {
+        guard let parkingSpot = trackingVehicle.activeParkingSpot,
+              parkingSpot.hasRunningTimer else { return }
+
+        timerTask?.cancel()
+        timerTask = nil
+
+        timerTask = TimerManager.starTimer(
+            endTime: parkingSpot.timerEndTime,
+            onTick: { remaining in
+                timerRemainingTime = remaining
+            },
+            onComplete: {
+                timerTask?.cancel()
+                timerTask = nil
+            }
+        )
     }
 
     private func trackFirstVehicle(vehicles: [Vehicle]) {
