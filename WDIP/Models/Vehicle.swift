@@ -6,9 +6,9 @@
 //
 
 import Foundation
+import MapKit
 import SwiftData
 import SwiftUI
-import MapKit
 
 @Model
 final class Vehicle {
@@ -32,8 +32,6 @@ final class Vehicle {
     }
 
     var activeParkingSpot: ParkingSpot? {
-        guard isParked, let parkingSpots else { return nil }
-
-        return parkingSpots.sorted { $0.parkingStartTime > $1.parkingStartTime }.first
+        parkingSpots?.first { $0.isCurrentParkingSpot }
     }
 }
