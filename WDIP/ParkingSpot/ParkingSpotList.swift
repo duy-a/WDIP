@@ -22,20 +22,16 @@ struct ParkingSpotList: View {
     @State private var isShowingFilters: Bool = false
 
     var searchResults: [ParkingSpot] {
-        let filteredByDateTimePeriod = parkingSpots.filter {
-            $0.parkingStartTime >= startDateTimeFilter &&
-                $0.parkingStartTime <= endDateTimeFilter
-        }
-        let filteredByVehicles = filteredByDateTimePeriod.filter {
-            if vehiclesFilter.isEmpty { return false }
-            guard let vehicle = $0.vehicle else { return false }
-            return vehiclesFilter.contains(vehicle)
-        }
+        return parkingSpots.filter { spot in
+            guard spot.parkingStartTime >= startDateTimeFilter,
+                  spot.parkingStartTime <= endDateTimeFilter else { return false }
 
-        if searchText.isEmpty {
-            return filteredByVehicles
-        } else {
-            return filteredByVehicles.filter { $0.address.contains(searchText) }
+            guard let vehicle = spot.vehicle,
+                  vehiclesFilter.isEmpty == false,
+                  vehiclesFilter.contains(vehicle) else { return false }
+
+            if searchText.isEmpty { return true }
+            return spot.address.localizedCaseInsensitiveContains(searchText)
         }
     }
 
