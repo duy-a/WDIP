@@ -19,6 +19,8 @@ final class ParkingSpot {
     var parkingEndTime: Date = Date.now.roundedToNearestMinute
     var notes: String = ""
 
+    var isCurrentParkingSpot: Bool = false
+
     var hasRunningTimer: Bool = false
     var timerEndTime: Date?
 
@@ -42,16 +44,6 @@ final class ParkingSpot {
         self.init()
         self.latitude = coordinates.latitude
         self.longitude = coordinates.longitude
-    }
-
-    var isCurrentParkingSpot: Bool {
-        guard let vehicle else { return false }
-
-        if self == vehicle.activeParkingSpot {
-            return true
-        }
-
-        return false
     }
 
     var coordinates: CLLocationCoordinate2D {

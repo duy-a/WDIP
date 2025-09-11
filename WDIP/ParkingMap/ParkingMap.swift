@@ -23,7 +23,8 @@ struct ParkingMap: View {
     @State private var sheetView: SheetView? = nil
 
     var currentParkingSpotCoordinates: CLLocationCoordinate2D? {
-        trackingVehicle.activeParkingSpot?.coordinates
+        guard trackingVehicle.isParked else { return nil }
+        return trackingVehicle.activeParkingSpot?.coordinates
     }
 
     var body: some View {
@@ -185,6 +186,7 @@ private extension ParkingMap {
         guard let mapCenterCoordinates else { return }
 
         let parkingSpot = ParkingSpot(coordinates: mapCenterCoordinates)
+        parkingSpot.isCurrentParkingSpot = true
         parkingSpot.vehicle = trackingVehicle
 
         trackingVehicle.isParked = true
@@ -193,8 +195,15 @@ private extension ParkingMap {
     }
 
     private func unpark() {
-        trackingVehicle.activeParkingSpot?.parkingEndTime = .now
+        guard let parkingSpot = trackingVehicle.activeParkingSpot else { return }
+        parkingSpot.isCurrentParkingSpot = false
+        parkingSpot.parkingEndTime = .now
         trackingVehicle.isParked = false
+
+        if parkingSpot.hasRunningTimer {
+            parkingSpot.stopTimer()
+            parkingSpot.cancelReminder()
+        }
     }
 
     private func centerOnParkedSpot() {
