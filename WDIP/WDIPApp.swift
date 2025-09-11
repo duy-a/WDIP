@@ -19,6 +19,9 @@ struct WDIPApp: App {
         WindowGroup {
             if isViewedOnboarding {
                 ParkingMap()
+                    .onAppear {
+                        StoreProvider.shared.migrate()
+                    }
             } else {
                 Onboarding()
             }
