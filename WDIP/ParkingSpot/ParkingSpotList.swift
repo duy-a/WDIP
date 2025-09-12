@@ -15,31 +15,31 @@ struct ParkingSpotList: View {
     @State private var startDateFilter: Date = .distantPast
     @State private var endDateFilter: Date = .now
 
+    @State private var searchText: String = ""
+    @State private var debouncedSearchText: String = ""
     @State private var isShowingFilters: Bool = false
 
     var body: some View {
         NavigationStack {
             ParkingSpotListFiltered(vehicles: vehiclesFilter,
                                     startDate: startDateFilter,
-                                    endDate: endDateFilter)
+                                    endDate: endDateFilter,
+                                    searchText: debouncedSearchText)
                 .sheetToolbar("Parking History") {
                     toolbarContent
                 }
+                .searchable(text: $searchText, prompt: "Address")
                 .sheet(isPresented: $isShowingFilters) {
                     ParkingSpotListFilters(vehiclesFilter: $vehiclesFilter,
                                            startDateFilter: $startDateFilter,
                                            endDateFilter: $endDateFilter)
                 }
+                .task(id: searchText) {
+                    await debounceSearch()
+                }
         }
         .onAppear {
-            vehiclesFilter.insert(trackingVehicle)
-            let earliestDate = trackingVehicle.parkingSpots?
-                .map { $0.parkingStartTime }
-                .min()
-
-            if let earliestDate {
-                startDateFilter = earliestDate
-            }
+            handleOnAppear()
         }
     }
 }
@@ -62,8 +62,26 @@ extension ParkingSpotList {
 }
 
 extension ParkingSpotList {
-    private func searchByAddress(text: String) {
-        //
+    private func handleOnAppear() {
+        vehiclesFilter.insert(trackingVehicle)
+        let earliestDate = trackingVehicle.parkingSpots?
+            .map { $0.parkingStartTime }
+            .min()
+
+        if let earliestDate {
+            startDateFilter = earliestDate
+        }
+    }
+
+    private func debounceSearch() async {
+        do {
+            try await Task.sleep(for: .seconds(0.3))
+            if !Task.isCancelled {
+                debouncedSearchText = searchText
+            }
+        } catch {
+            print("Task cancelled or error: \(error)")
+        }
     }
 
     private func showFilters() {

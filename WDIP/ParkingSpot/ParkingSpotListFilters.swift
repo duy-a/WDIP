@@ -57,6 +57,7 @@ struct ParkingSpotListFilters: View {
                 toolbarContent
             }
         }
+        .presentationDetents([.medium, .large])
     }
 }
 
