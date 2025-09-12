@@ -15,6 +15,7 @@ extension StoreProvider {
 }
 
 extension StoreProvider {
+    /// Migration will handle ParkingSpot.isCurrentParkingSpot variable being changed from a computed property to a var
     private func migratteToVersion031() {
         do {
             let descriptor = FetchDescriptor<Vehicle>()
@@ -22,12 +23,10 @@ extension StoreProvider {
 
             for vehicle in vehicles {
                 if vehicle.isParked {
-                    let toUpdateActiveParkingSpot = vehicle.parkingSpots?
-                        .sorted { $0.parkingStartTime > $1.parkingStartTime }
-                        .first
+                    let activeParkingSpot = vehicle.parkingSpots?.max(by: { $0.parkingStartTime < $1.parkingStartTime })
 
-                    if let toUpdateActiveParkingSpot {
-                        toUpdateActiveParkingSpot.isCurrentParkingSpot = true
+                    if let activeParkingSpot {
+                        activeParkingSpot.isCurrentParkingSpot = true
                     } else {
                         vehicle.isParked = false
                     }

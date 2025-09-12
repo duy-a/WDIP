@@ -2,69 +2,51 @@
 //  ParkingSpotList.swift
 //  WDIP
 //
-//  Created by Duy Anh Ngac on 25/8/25.
+//  Created by Duy Anh Ngac on 12/9/25.
 //
 
 import SwiftData
 import SwiftUI
 
 struct ParkingSpotList: View {
-    @Query(sort: \ParkingSpot.parkingStartTime, order: .reverse) var parkingSpots: [ParkingSpot]
-
     @Binding var trackingVehicle: Vehicle
 
-    @State private var selectedParkingSpot: ParkingSpot? = nil
+    @State private var vehiclesFilter: Set<Vehicle> = []
+    @State private var startDateFilter: Date = .distantPast
+    @State private var endDateFilter: Date = .now
 
     @State private var searchText: String = ""
-    @State private var startDateTimeFilter: Date = .distantPast
-    @State private var endDateTimeFilter: Date = .now
-    @State private var vehiclesFilter: Set<Vehicle> = []
+    @State private var debouncedSearchText: String = ""
     @State private var isShowingFilters: Bool = false
-
-    var searchResults: [ParkingSpot] {
-        return parkingSpots.filter { spot in
-            guard spot.parkingStartTime >= startDateTimeFilter,
-                  spot.parkingStartTime <= endDateTimeFilter else { return false }
-
-            guard let vehicle = spot.vehicle,
-                  vehiclesFilter.isEmpty == false,
-                  vehiclesFilter.contains(vehicle) else { return false }
-
-            if searchText.isEmpty { return true }
-            return spot.address.localizedCaseInsensitiveContains(searchText)
-        }
-    }
 
     var body: some View {
         NavigationStack {
-            List(searchResults) { parkingSpot in
-                ParkingSpotListRow(parkingSpot: parkingSpot) {
-                    showInfo(for: parkingSpot)
+            ParkingSpotListFiltered(vehicles: vehiclesFilter,
+                                    startDate: startDateFilter,
+                                    endDate: endDateFilter,
+                                    searchText: debouncedSearchText)
+                .sheetToolbar("Parking History") {
+                    toolbarContent
                 }
-            }
-            .searchable(text: $searchText, placement: .toolbar, prompt: "Address")
-            .sheetToolbar("Parking History") {
-                toolbarContent
-            }
-            .sheet(item: $selectedParkingSpot) { parkingSpot in
-                ParkingSpotForm(parkingSpot: parkingSpot)
-            }
-            .sheet(isPresented: $isShowingFilters) {
-                ParkingSpotListFilters(startDateTimeFilter: $startDateTimeFilter,
-                                       endDateTimeFilter: $endDateTimeFilter,
-                                       vehiclesFilter: $vehiclesFilter)
-                    .presentationDetents([.medium, .large])
-            }
-            .onChange(of: startDateTimeFilter, initial: true) { _, _ in
-                resetFilters()
-            }
+                .searchable(text: $searchText, prompt: "Address")
+                .sheet(isPresented: $isShowingFilters) {
+                    ParkingSpotListFilters(vehiclesFilter: $vehiclesFilter,
+                                           startDateFilter: $startDateFilter,
+                                           endDateFilter: $endDateFilter)
+                }
+                .task(id: searchText) {
+                    await debounceSearch()
+                }
+        }
+        .onAppear {
+            handleOnAppear()
         }
     }
 }
 
-#Preview {
-    ParkingSpotList(trackingVehicle: .constant(StoreProvider.sampleVehicle))
-}
+// #Preview {
+//    ParkingSpotList()
+// }
 
 extension ParkingSpotList {
     @ToolbarContentBuilder
@@ -80,17 +62,26 @@ extension ParkingSpotList {
 }
 
 extension ParkingSpotList {
-    private func resetFilters() {
-        if startDateTimeFilter == .distantPast {
-            vehiclesFilter.removeAll()
-            vehiclesFilter.insert(trackingVehicle)
-            startDateTimeFilter = parkingSpots.map(\.parkingStartTime).min() ?? .now
-            endDateTimeFilter = .now
+    private func handleOnAppear() {
+        vehiclesFilter.insert(trackingVehicle)
+        let earliestDate = trackingVehicle.parkingSpots?
+            .map { $0.parkingStartTime }
+            .min()
+
+        if let earliestDate {
+            startDateFilter = earliestDate
         }
     }
 
-    private func showInfo(for parkingSpot: ParkingSpot) {
-        selectedParkingSpot = parkingSpot
+    private func debounceSearch() async {
+        do {
+            try await Task.sleep(for: .seconds(0.3))
+            if !Task.isCancelled {
+                debouncedSearchText = searchText
+            }
+        } catch {
+            print("Task cancelled or error: \(error)")
+        }
     }
 
     private func showFilters() {

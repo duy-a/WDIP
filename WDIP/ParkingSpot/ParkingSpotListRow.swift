@@ -11,7 +11,7 @@ import SwiftUI
 struct ParkingSpotListRow: View {
     @Bindable var parkingSpot: ParkingSpot
 
-    var action: () -> Void
+    @State private var showInfo: Bool = false
 
     var vehicle: Vehicle {
         parkingSpot.vehicle ?? Vehicle(name: "???", icon: "questionmark", color: "gray")
@@ -47,14 +47,15 @@ struct ParkingSpotListRow: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
 
-            Button("Show Vehicle Info", systemImage: "info", action: action)
-                .labelStyle(.iconOnly)
-                .buttonStyle(.glass)
+            Button("Show Vehicle Info", systemImage: "info") {
+                showInfo = true
+            }
+            .labelStyle(.iconOnly)
+            .buttonStyle(.glass)
         }
         .onAppear(perform: parkingSpot.getAddress)
+        .sheet(isPresented: $showInfo) {
+            ParkingSpotForm(parkingSpot: parkingSpot)
+        }
     }
-}
-
-#Preview {
-    ParkingSpotListRow(parkingSpot: StoreProvider.sampleParkingSpot1) {}
 }

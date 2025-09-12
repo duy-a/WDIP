@@ -74,8 +74,11 @@ extension ParkingSpotMeter {
         } message: {
             Text("Please enable notifications in Settings to recieve reminders")
         }
-        .onChange(of: parkingSpot.hasReminder) { _, newValue in
-            if !newValue {
+        .onAppear {
+            handleOnAppear()
+        }
+        .onChange(of: parkingSpot.hasReminder) {
+            if !parkingSpot.hasReminder {
                 enabledReminder = false
                 reminderOption = .before5min
                 reminderTime = .now
@@ -94,6 +97,7 @@ extension ParkingSpotMeter {
 
         parkingSpot.hasReminder = true
         parkingSpot.reminderTime = calculatedReminderTime
+        parkingSpot.reminderOption = reminderOption.rawValue
 
         parkingSpot.scheduleReminder()
     }
@@ -104,6 +108,15 @@ extension ParkingSpotMeter {
         reminderTime = .now
 
         parkingSpot.cancelReminder()
+    }
+
+    private func handleOnAppear() {
+        enabledReminder = parkingSpot.hasReminder
+
+        reminderTime = parkingSpot.reminderTime ?? .now
+        if let option = parkingSpot.reminderOption {
+            reminderOption = ParkingSpot.ReminderTimeOption(rawValue: option) ?? .before5min
+        }
     }
 
     private func requestNotificationPermission() {

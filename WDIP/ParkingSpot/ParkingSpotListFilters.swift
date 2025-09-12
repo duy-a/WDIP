@@ -11,16 +11,16 @@ import SwiftUI
 struct ParkingSpotListFilters: View {
     @Query(sort: \Vehicle.name) private var vehicles: [Vehicle]
 
-    @Binding var startDateTimeFilter: Date
-    @Binding var endDateTimeFilter: Date
     @Binding var vehiclesFilter: Set<Vehicle>
+    @Binding var startDateFilter: Date
+    @Binding var endDateFilter: Date
 
     var body: some View {
         NavigationStack {
             Form {
                 Section("Parking Period") {
-                    DatePicker("Start Date", selection: $startDateTimeFilter)
-                    DatePicker("End Date", selection: $endDateTimeFilter, in: startDateTimeFilter ... .now)
+                    DatePicker("Start Date", selection: $startDateFilter)
+                    DatePicker("End Date", selection: $endDateFilter, in: startDateFilter ... .now)
                 }
 
                 Section {
@@ -36,13 +36,12 @@ struct ParkingSpotListFilters: View {
                                     Image(systemName: vehicle.icon)
                                         .foregroundStyle(vehicle.uiColor)
                                 }
-                                .frame(maxWidth: .infinity, alignment: .leading)
 
                                 Image(systemName: "checkmark")
                                     .foregroundStyle(.primary)
                                     .opacity(vehiclesFilter.contains(vehicle) ? 1 : 0)
                             }
-                            .containerShape(.rect)
+                            .contentShape(.rect)
                         }
                         .buttonStyle(.plain)
                     }
@@ -58,6 +57,7 @@ struct ParkingSpotListFilters: View {
                 toolbarContent
             }
         }
+        .presentationDetents([.medium, .large])
     }
 }
 
@@ -76,8 +76,8 @@ extension ParkingSpotListFilters {
 
 extension ParkingSpotListFilters {
     private func triggerResetFilters() {
-        startDateTimeFilter = .distantPast
-        // the rest of filters will be reset by parent, whacky? yes, but I don't want to spend more time on this
+        startDateFilter = .distantPast
+        endDateFilter = .now
     }
 
     private func toggleVehicleFilter(vehicle: Vehicle) {

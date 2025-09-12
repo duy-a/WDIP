@@ -41,13 +41,15 @@ extension ParkingSpot {
     }
 
     func scheduleReminder() {
-        guard let reminderTime, let reminderOption = ReminderTimeOption(rawValue: reminderOption) else { return }
+        guard let reminderTime,
+              let reminderOption,
+              let option = ReminderTimeOption(rawValue: reminderOption) else { return }
 
         var notificationBody = ""
 
-        switch reminderOption {
+        switch option {
         case .before5min, .before10min, .before15min:
-            notificationBody = "Your parking meter will expire in \(reminderOption.rawValue) minutes."
+            notificationBody = "Your parking meter will expire in \(option.rawValue) minutes."
         case .atTheEnd:
             notificationBody = "Your parking meter has expired."
         case .custom:
@@ -68,17 +70,14 @@ extension ParkingSpot {
     }
 
     func clearReminderIfDelivered() {
-        guard hasReminder else { return }
-        Task {
-            if await NotificationManager.shared.isDelivered(id: generateReminderId()) {
-                clearReminder()
-            }
+        if let reminderTime, reminderTime < .now {
+            cancelReminder()
         }
     }
 
     private func clearReminder() {
         hasReminder = false
-        reminderOption = ReminderTimeOption.custom.rawValue
+        reminderOption = nil
         reminderTime = nil
     }
 }
