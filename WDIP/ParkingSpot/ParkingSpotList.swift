@@ -2,98 +2,17 @@
 //  ParkingSpotList.swift
 //  WDIP
 //
-//  Created by Duy Anh Ngac on 25/8/25.
+//  Created by Duy Anh Ngac on 12/9/25.
 //
 
-import SwiftData
 import SwiftUI
 
 struct ParkingSpotList: View {
-    @Query(sort: \ParkingSpot.parkingStartTime, order: .reverse) var parkingSpots: [ParkingSpot]
-
-    @Binding var trackingVehicle: Vehicle
-
-    @State private var selectedParkingSpot: ParkingSpot? = nil
-
-    @State private var searchText: String = ""
-    @State private var startDateTimeFilter: Date = .distantPast
-    @State private var endDateTimeFilter: Date = .now
-    @State private var vehiclesFilter: Set<Vehicle> = []
-    @State private var isShowingFilters: Bool = false
-
-    var searchResults: [ParkingSpot] {
-        return parkingSpots.filter { spot in
-            guard spot.parkingStartTime >= startDateTimeFilter,
-                  spot.parkingStartTime <= endDateTimeFilter else { return false }
-
-            guard let vehicle = spot.vehicle,
-                  vehiclesFilter.isEmpty == false,
-                  vehiclesFilter.contains(vehicle) else { return false }
-
-            if searchText.isEmpty { return true }
-            return spot.address.localizedCaseInsensitiveContains(searchText)
-        }
-    }
-
     var body: some View {
-        NavigationStack {
-            List(searchResults) { parkingSpot in
-                ParkingSpotListRow(parkingSpot: parkingSpot) {
-                    showInfo(for: parkingSpot)
-                }
-            }
-            .searchable(text: $searchText, placement: .toolbar, prompt: "Address")
-            .sheetToolbar("Parking History") {
-                toolbarContent
-            }
-            .sheet(item: $selectedParkingSpot) { parkingSpot in
-                ParkingSpotForm(parkingSpot: parkingSpot)
-            }
-            .sheet(isPresented: $isShowingFilters) {
-                ParkingSpotListFilters(startDateTimeFilter: $startDateTimeFilter,
-                                       endDateTimeFilter: $endDateTimeFilter,
-                                       vehiclesFilter: $vehiclesFilter)
-                    .presentationDetents([.medium, .large])
-            }
-            .onChange(of: startDateTimeFilter, initial: true) { _, _ in
-                resetFilters()
-            }
-        }
+        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
     }
 }
 
 #Preview {
-    ParkingSpotList(trackingVehicle: .constant(StoreProvider.sampleVehicle))
-}
-
-extension ParkingSpotList {
-    @ToolbarContentBuilder
-    var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .bottomBar) {
-            Button("Filter by", systemImage: "line.3.horizontal.decrease", action: showFilters)
-        }
-
-        ToolbarSpacer(placement: .bottomBar)
-
-        DefaultToolbarItem(kind: .search, placement: .bottomBar)
-    }
-}
-
-extension ParkingSpotList {
-    private func resetFilters() {
-        if startDateTimeFilter == .distantPast {
-            vehiclesFilter.removeAll()
-            vehiclesFilter.insert(trackingVehicle)
-            startDateTimeFilter = parkingSpots.map(\.parkingStartTime).min() ?? .now
-            endDateTimeFilter = .now
-        }
-    }
-
-    private func showInfo(for parkingSpot: ParkingSpot) {
-        selectedParkingSpot = parkingSpot
-    }
-
-    private func showFilters() {
-        isShowingFilters = true
-    }
+    ParkingSpotList()
 }

@@ -23,16 +23,11 @@ extension StoreProvider {
 
             for vehicle in vehicles {
                 if vehicle.isParked {
-                    if let toUpdateActiveParkingSpot = vehicle.parkingSpots?
-                        .max(by: { $0.parkingStartTime < $1.parkingStartTime })
-                    {
-                        if toUpdateActiveParkingSpot.isCurrentParkingSpot == false {
-                            toUpdateActiveParkingSpot.isCurrentParkingSpot = true
-                        } else {
-                            vehicle.isParked = false
-                        }
+                    let activeParkingSpot = vehicle.parkingSpots?.max(by: { $0.parkingStartTime < $1.parkingStartTime })
+
+                    if let activeParkingSpot {
+                        activeParkingSpot.isCurrentParkingSpot = true
                     } else {
-                        // No parking spots at all, reset state
                         vehicle.isParked = false
                     }
                 }
