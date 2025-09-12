@@ -27,6 +27,7 @@ extension ParkingSpot {
 
         hasRunningTimer = false
         timerEndTime = nil
+        timerRemainingTime = 0
     }
 
     func clearTimerTask() {

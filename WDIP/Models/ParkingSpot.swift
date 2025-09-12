@@ -25,7 +25,7 @@ final class ParkingSpot {
     var timerEndTime: Date?
 
     var hasReminder: Bool = false
-    var reminderOption: Int = ReminderTimeOption.custom.rawValue
+    var reminderOption: Int?
     var reminderTime: Date?
 
     @Attribute(.ephemeral) var timerRemainingTime: TimeInterval = 0
