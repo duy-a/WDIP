@@ -2,7 +2,7 @@
 //  ColorPicker.swift
 //  WDIP
 //
-//  Created by Duy Anh Ngac on 25/7/25.
+//  Created by Duy Anh Ngac on 13/9/25.
 //
 
 import SwiftUI
@@ -33,14 +33,6 @@ struct ColorPicker: View {
     }
 }
 
-#Preview {
-    Form {
-        Section {
-            ColorPicker(selectedColor: .constant(.blue))
-        }
-    }
-}
-
 enum PickerColor: String, CaseIterable, Identifiable {
     case red, orange, yellow, green, blue, indigo, purple, brown, cyan, mint, pink, teal
 
@@ -62,7 +54,7 @@ enum PickerColor: String, CaseIterable, Identifiable {
             case .teal: return .teal
         }
     }
-    
+
     var colorString: String {
         self.rawValue
     }

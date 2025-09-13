@@ -2,7 +2,7 @@
 //  StoreProvider+Schema.swift
 //  WDIP
 //
-//  Created by Duy Anh Ngac on 29/7/25.
+//  Created by Duy Anh Ngac on 13/9/25.
 //
 
 import Foundation
