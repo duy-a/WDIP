@@ -6,9 +6,11 @@
 //
 
 import MapKit
+import SwiftData
 import SwiftUI
 
 struct ParkingMap: View {
+    @Environment(\.modelContext) private var modelContext
     @Environment(LocationManager.self) private var locationManager: LocationManager
 
     @State private var trackingVehicle: Vehicle? = nil
@@ -17,10 +19,20 @@ struct ParkingMap: View {
     @State private var isShowingParkingHistory: Bool = false
     @State private var isShowingSettings: Bool = false
 
+    let appleParkCoordinates: CLLocationCoordinate2D = .init(latitude: 37.33478414571969, longitude: -122.00894818929088)
+
     var body: some View {
         NavigationStack {
             ZStack {
-                Text("Mapp will be here")
+                if let trackingVehicle {
+                    VStack {
+                        if trackingVehicle.isParked {
+                            Button("unpark", action: unpark)
+                        } else {
+                            Button("park", action: park)
+                        }
+                    }
+                }
             }
             .onAppear {
                 locationManager.requestWhenInUseAuthorization()
@@ -36,7 +48,7 @@ struct ParkingMap: View {
                 VehicleList(trackingVehicle: $trackingVehicle)
             }
             .sheet(isPresented: $isShowingParkingHistory) {
-                //
+                ParkingSpotList()
             }
             .sheet(isPresented: $isShowingSettings) {
                 //
@@ -86,5 +98,30 @@ extension ParkingMap {
                 .tint(.primary)
             }
         }
+    }
+}
+
+extension ParkingMap {
+    private func park() {
+        guard let trackingVehicle else { return }
+
+        let parkingSpot = ParkingSpot(coordinates: appleParkCoordinates)
+        parkingSpot.vehicle = trackingVehicle
+
+        trackingVehicle.isParked = true
+
+        modelContext.insert(parkingSpot)
+    }
+
+    private func unpark() {
+        guard let trackingVehicle,
+              trackingVehicle.isParked,
+              let parkingSpot = trackingVehicle.currentParkingSpot
+        else {
+            return
+        }
+
+        trackingVehicle.isParked = false
+        parkingSpot.parkEndTime = .now.roundedToNearestMinute
     }
 }

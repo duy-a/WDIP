@@ -110,6 +110,5 @@ extension VehicleForm {
         guard let vehicle else { return }
         modelContext.delete(vehicle)
         onDelete?()
-        dismiss()
     }
 }

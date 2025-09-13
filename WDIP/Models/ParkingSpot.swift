@@ -14,11 +14,11 @@ final class ParkingSpot {
     var id: String = UUID().uuidString
     var latitude: Double = 0.0
     var longtitude: Double = 0.0
-    var parkStartTime: Date = Date.now
-    var parkEndTime: Date = Date.now
-    var isActive: Bool = false
+    var parkStartTime: Date = Date.now.roundedToNearestMinute
+    var parkEndTime: Date? = nil
     var timerEndTime: Date?
     var reminderEndTime: Date?
+    var createdAt: Date = Date.now
     
     var vehicle: Vehicle?
 

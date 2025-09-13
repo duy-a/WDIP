@@ -29,6 +29,6 @@ extension Vehicle {
     }
 
     var currentParkingSpot: ParkingSpot? {
-        parkingSpots?.first { $0.isActive }
+        parkingSpots?.first { $0.parkEndTime == nil }
     }
 }
