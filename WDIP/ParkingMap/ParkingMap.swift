@@ -106,8 +106,8 @@ extension ParkingMap {
         guard let trackingVehicle else { return }
 
         let parkingSpot = ParkingSpot(coordinates: appleParkCoordinates)
-        parkingSpot.vehicle = trackingVehicle
 
+        trackingVehicle.parkingSpots?.append(parkingSpot)
         trackingVehicle.isParked = true
 
         modelContext.insert(parkingSpot)
