@@ -22,11 +22,9 @@ struct ParkingSpotListFilter: View {
     var body: some View {
         NavigationStack {
             Form {
-                Text("\(vehiclesFilter)")
-
                 Section("Date Range") {
                     DatePicker("Start Date", selection: $startDateFilter)
-                    DatePicker("End Date", selection: $endDateFilter)
+                    DatePicker("End Date", selection: $endDateFilter, in: ...Date.now)
                 }
 
                 Section {
