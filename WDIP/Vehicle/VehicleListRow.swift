@@ -20,6 +20,8 @@ struct VehicleListRow: View {
         HStack {
             Label {
                 Text(vehicle.name)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
             } icon: {
                 Image(systemName: vehicle.icon)
                     .foregroundStyle(vehicle.uiColor)
