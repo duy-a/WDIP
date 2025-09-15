@@ -37,5 +37,3 @@ struct VehicleList: View {
         }
     }
 }
-
-extension VehicleList {}
