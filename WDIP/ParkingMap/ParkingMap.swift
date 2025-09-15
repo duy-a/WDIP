@@ -48,7 +48,7 @@ struct ParkingMap: View {
                 VehicleList(trackingVehicle: $trackingVehicle)
             }
             .sheet(isPresented: $isShowingParkingHistory) {
-                ParkingSpotList()
+                ParkingSpotList(trackingVehicle: trackingVehicle)
             }
             .sheet(isPresented: $isShowingSettings) {
                 //
@@ -122,6 +122,6 @@ extension ParkingMap {
         }
 
         trackingVehicle.isParked = false
-        parkingSpot.parkEndTime = .now.roundedToNearestMinute
+        parkingSpot.parkEndTime = .now.roundedDownToMinute
     }
 }

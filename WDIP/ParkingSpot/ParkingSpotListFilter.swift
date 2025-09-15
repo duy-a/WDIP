@@ -9,13 +9,11 @@ import SwiftData
 import SwiftUI
 
 struct ParkingSpotListFilter: View {
-    @Environment(\.dismiss) private var dismiss
-
     @Binding var vehiclesFilter: Set<Vehicle>
     @Binding var startDateFilter: Date
     @Binding var endDateFilter: Date
 
-    var onApply: () -> Void
+    var onReset: () -> Void
 
     @Query(sort: \Vehicle.name) private var vehicles: [Vehicle]
 
@@ -23,7 +21,7 @@ struct ParkingSpotListFilter: View {
         NavigationStack {
             Form {
                 Section("Date Range") {
-                    DatePicker("Start Date", selection: $startDateFilter)
+                    DatePicker("Start Date", selection: $startDateFilter, in: ...Date.now)
                     DatePicker("End Date", selection: $endDateFilter, in: ...Date.now)
                 }
 
@@ -57,11 +55,15 @@ struct ParkingSpotListFilter: View {
                     }
                 }
             }
+            .onAppear {
+                if vehiclesFilter.isEmpty {
+                    vehiclesFilter = Set(vehicles)
+                }
+            }
             .sheetToolbar("Filters") {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Apply Filters", systemImage: "checkmark", role: .confirm) {
-                        onApply()
-                        dismiss()
+                    Button("Reset Filters", systemImage: "arrow.trianglehead.counterclockwise") {
+                        onReset()
                     }
                 }
             }

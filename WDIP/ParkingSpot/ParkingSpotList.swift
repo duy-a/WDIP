@@ -8,17 +8,8 @@
 import SwiftData
 import SwiftUI
 
-/// Copying @Query to local Array due to UI updating slowly when using predicated directy at @Query
-/// This is happeining when enabled SwiftData + Cloudkit
-/// If I stumble upon the solution i will update this, but for now this works and have a great reactivity
 struct ParkingSpotList: View {
-    @Query(sort: [
-        SortDescriptor(\ParkingSpot.parkStartTime, order: .reverse),
-        SortDescriptor(\ParkingSpot.createdAt, order: .reverse)
-    ])
-    private var parkingSpots: [ParkingSpot]
-
-    @State private var localParkingSpotsCopy: [ParkingSpot] = []
+    var trackingVehicle: Vehicle? = nil
 
     @State private var vehiclesFilter: Set<Vehicle> = []
     @State private var startDateFilter: Date = Calendar.current.date(byAdding: .month, value: -1, to: .now)!
@@ -26,18 +17,16 @@ struct ParkingSpotList: View {
 
     @State private var isShowingFilters: Bool = false
 
-    @State private var debounceTask: Task<Void, Never>?
-
     var body: some View {
         NavigationStack {
-            List(localParkingSpotsCopy) { spot in
+            ParkingSpotListFiltered(startDate: startDateFilter,
+                                    endDate: endDateFilter,
+                                    vehicles: vehiclesFilter)
+            { spot in
                 ParkingSpotListRow(parkingSpot: spot)
             }
-            .refreshable {
-                applyFilters()
-            }
             .onAppear {
-                localParkingSpotsCopy = parkingSpots
+                setInitialFilters()
             }
             .sheetToolbar("Parking History") {
                 ToolbarItem(placement: .bottomBar) {
@@ -52,22 +41,27 @@ struct ParkingSpotList: View {
                 ParkingSpotListFilter(vehiclesFilter: $vehiclesFilter,
                                       startDateFilter: $startDateFilter,
                                       endDateFilter: $endDateFilter,
-                                      onApply: applyFilters)
+                                      onReset: setInitialFilters)
             }
         }
     }
+}
 
-    private func applyFilters() {
-        localParkingSpotsCopy = parkingSpots
+extension ParkingSpotList {
+    private func setInitialFilters() {
+        if let trackingVehicle {
+            vehiclesFilter.removeAll()
+            vehiclesFilter.insert(trackingVehicle)
+        } else {
+            vehiclesFilter = []
+        }
 
-        localParkingSpotsCopy = localParkingSpotsCopy
-            .filter { spot in
-                let parkEndTime = spot.parkEndTime ?? .distantFuture
-                let startBeforeEnd = spot.parkStartTime <= endDateFilter
-                let endAfterStart = parkEndTime >= startDateFilter
-                let matchedVehicles = spot.vehicle.map { vehiclesFilter.contains($0) } ?? false
+        if let earliestDate = trackingVehicle?.parkingSpots?.compactMap(\.parkStartTime).min() {
+            startDateFilter = earliestDate
+        } else {
+            startDateFilter = Calendar.current.date(byAdding: .month, value: -1, to: .now)!
+        }
 
-                return matchedVehicles && startBeforeEnd && endAfterStart
-            }
+        endDateFilter = .now
     }
 }
