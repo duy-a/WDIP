@@ -31,14 +31,7 @@ struct ParkingSpotList: View {
     var body: some View {
         NavigationStack {
             List(localParkingSpotsCopy) { spot in
-                VStack {
-                    Text(spot.vehicle?.name ?? ":(")
-                    Text(spot.createdAt, format: .dateTime)
-                    if spot.parkEndTime == nil {
-                        Text("current")
-                    }
-                    Text(spot.parkStartTime <= .now ? "Yes" : "No")
-                }
+                ParkingSpotListRow(parkingSpot: spot)
             }
             .refreshable {
                 applyFilters()
