@@ -12,12 +12,13 @@ class TimerManager {
     var remainingTime: TimeInterval = 0
     private var task: Task<Void, Never>?
     var endTime: Date
+    var onTick: (() -> Void)?
     var onCompletion: (() -> Void)?
 
     init(endTime: Date) {
         self.endTime = endTime
     }
-    
+
     var formatRemainingTime: String {
         let totalSeconds = max(Int(remainingTime), 0)
         let days = totalSeconds / 86400
@@ -31,32 +32,33 @@ class TimerManager {
             return String(format: "%02d:%02d:%02d", hours, minutes, seconds)
         }
     }
-    
+
     func start() {
         task?.cancel()
         task = Task { @MainActor in
             var nextTick = ContinuousClock.now
-            
+
             while !Task.isCancelled {
                 remainingTime = endTime.timeIntervalSinceNow
+                onTick?()
 
                 if remainingTime <= 0 {
                     remainingTime = 0
                     onCompletion?()
                     break
                 }
-                
+
                 nextTick = nextTick.advanced(by: .seconds(1))
                 try? await Task.sleep(until: nextTick, clock: .continuous)
             }
         }
     }
-    
+
     func stop() {
         task?.cancel()
         task = nil
     }
-    
+
     deinit {
         stop()
     }

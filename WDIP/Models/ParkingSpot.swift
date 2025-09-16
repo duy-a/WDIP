@@ -13,11 +13,12 @@ import SwiftData
 final class ParkingSpot {
     var id: String = UUID().uuidString
     var latitude: Double = 0.0
-    var longtitude: Double = 0.0
+    var longitude: Double = 0.0
     var parkingStartTime: Date = Date.now.roundedDownToMinute
     var parkingEndTime: Date?
     var address: String = ""
     var timerEndTime: Date?
+    var reminderOption: Int?
     var reminderEndTime: Date?
     var createdAt: Date = Date.now
     var notes: String = ""
@@ -26,7 +27,17 @@ final class ParkingSpot {
 
     init(coordinates: CLLocationCoordinate2D) {
         self.latitude = coordinates.latitude
-        self.longtitude = coordinates.longitude
+        self.longitude = coordinates.longitude
+    }
+
+    var notificationId: String {
+        guard let timerEndTime else { return "" }
+
+        let latStr = String(format: "%.5f", latitude)
+        let lonStr = String(format: "%.5f", longitude)
+        let timestamp = Int(timerEndTime.timeIntervalSince1970)
+
+        return "parking_\(latStr)_\(lonStr)_\(timestamp)"
     }
 }
 
@@ -48,6 +59,28 @@ extension ParkingSpot {
             return mapItem.address
         } catch {
             return nil
+        }
+    }
+}
+
+extension ParkingSpot {
+    enum ReminderTimeOption: Int, CaseIterable, Identifiable {
+        case before5min = 5
+        case before10min = 10
+        case before15min = 15
+        case atTheEnd = 0
+        case custom = -999
+
+        var id: Self { self }
+
+        var label: String {
+            switch self {
+            case .before5min: return "5 minutes before"
+            case .before10min: return "10 minutes before"
+            case .before15min: return "15 minutes before"
+            case .atTheEnd: return "At the end"
+            case .custom: return "Custom"
+            }
         }
     }
 }

@@ -26,7 +26,7 @@ struct ParkingSpotForm: View {
             .task {
                 if parkingSpot.address.isEmpty {
                     parkingSpot.address = await ParkingSpot.getAddressBy(latitude: parkingSpot.latitude,
-                                                                         longitude: parkingSpot.longtitude)
+                                                                         longitude: parkingSpot.longitude)
                 }
             }
             .sheetToolbar("Parking Info") {

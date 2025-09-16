@@ -11,6 +11,7 @@ import SwiftUI
 @main
 struct WDIPApp: App {
     @State private var locationManager: LocationManager = .shared
+    @State private var notificationManager: NotificationManager = .shared
 
     var body: some Scene {
         WindowGroup {
@@ -18,5 +19,6 @@ struct WDIPApp: App {
         }
         .modelContainer(StoreProvider.shared.modelContainer)
         .environment(locationManager)
+        .environment(notificationManager)
     }
 }
