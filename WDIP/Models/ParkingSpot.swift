@@ -29,3 +29,25 @@ final class ParkingSpot {
         self.longtitude = coordinates.longitude
     }
 }
+
+extension ParkingSpot {
+    static func getAddressBy(coordinates: CLLocationCoordinate2D) async -> String {
+        return await getMKAddressBy(latitude: coordinates.latitude, longitude: coordinates.longitude)?.fullAddress ?? ""
+    }
+
+    static func getAddressBy(latitude: Double, longitude: Double) async -> String {
+        return await getMKAddressBy(latitude: latitude, longitude: longitude)?.fullAddress ?? ""
+    }
+
+    static func getMKAddressBy(latitude: Double, longitude: Double) async -> MKAddress? {
+        let location: CLLocation = .init(latitude: latitude, longitude: longitude)
+
+        do {
+            guard let mapItem = try await MKReverseGeocodingRequest(location: location)?.mapItems.first else { return nil }
+
+            return mapItem.address
+        } catch {
+            return nil
+        }
+    }
+}

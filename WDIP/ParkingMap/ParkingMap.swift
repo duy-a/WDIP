@@ -111,6 +111,10 @@ extension ParkingMap {
         trackingVehicle.isParked = true
 
         modelContext.insert(parkingSpot)
+
+        Task.detached {
+            parkingSpot.address = await ParkingSpot.getAddressBy(coordinates: appleParkCoordinates)
+        }
     }
 
     private func unpark() {

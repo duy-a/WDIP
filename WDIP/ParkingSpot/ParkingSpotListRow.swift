@@ -54,11 +54,14 @@ struct ParkingSpotListRow: View {
             .labelStyle(.iconOnly)
             .buttonStyle(.glass)
         }
-        .onAppear {
-            // Get Parking spot adress
-        }
         .sheet(isPresented: $showInfo) {
             ParkingSpotForm(parkingSpot: parkingSpot)
+        }
+        .task {
+            if parkingSpot.address.isEmpty {
+                parkingSpot.address = await ParkingSpot.getAddressBy(latitude: parkingSpot.latitude,
+                                                                     longitude: parkingSpot.longtitude)
+            }
         }
     }
 }

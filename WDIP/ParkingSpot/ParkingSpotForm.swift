@@ -23,6 +23,12 @@ struct ParkingSpotForm: View {
             Form {
                 TextField("Notes", text: $parkingSpot.notes)
             }
+            .task {
+                if parkingSpot.address.isEmpty {
+                    parkingSpot.address = await ParkingSpot.getAddressBy(latitude: parkingSpot.latitude,
+                                                                         longitude: parkingSpot.longtitude)
+                }
+            }
             .sheetToolbar("Parking Info") {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Delete", systemImage: "trash", action: { isShowingDeleteAlert = true })
