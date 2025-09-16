@@ -25,11 +25,11 @@ struct ParkingSpotListRow: View {
 
                         Spacer()
 
-                        if parkingSpot.parkEndTime == nil {
+                        if parkingSpot.parkingEndTime == nil {
                             Text("Active")
                                 .foregroundStyle(.green)
                         } else {
-                            Text(parkingSpot.parkStartTime, format: .dateTime)
+                            Text(parkingSpot.parkingStartTime, format: .dateTime)
                                 .foregroundStyle(.secondary)
                         }
                     }

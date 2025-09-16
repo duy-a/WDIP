@@ -70,7 +70,7 @@ extension ParkingSpotList {
             vehiclesFilter = []
         }
 
-        if let earliestDate = trackingVehicle?.parkingSpots?.compactMap(\.parkStartTime).min() {
+        if let earliestDate = trackingVehicle?.parkingSpots?.compactMap(\.parkingStartTime).min() {
             startDateFilter = earliestDate
         } else {
             startDateFilter = Calendar.current.date(byAdding: .month, value: -1, to: .now)!

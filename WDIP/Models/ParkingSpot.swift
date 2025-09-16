@@ -14,8 +14,8 @@ final class ParkingSpot {
     var id: String = UUID().uuidString
     var latitude: Double = 0.0
     var longtitude: Double = 0.0
-    var parkStartTime: Date = Date.now.roundedDownToMinute
-    var parkEndTime: Date?
+    var parkingStartTime: Date = Date.now.roundedDownToMinute
+    var parkingEndTime: Date?
     var address: String = ""
     var timerEndTime: Date?
     var reminderEndTime: Date?

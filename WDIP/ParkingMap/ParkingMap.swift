@@ -19,6 +19,8 @@ struct ParkingMap: View {
     @State private var isShowingParkingHistory: Bool = false
     @State private var isShowingSettings: Bool = false
 
+    @State private var isShowingParkingMeter: Bool = false
+
     let appleParkCoordinates: CLLocationCoordinate2D = .init(latitude: 37.33478414571969, longitude: -122.00894818929088)
 
     var body: some View {
@@ -53,6 +55,11 @@ struct ParkingMap: View {
             .sheet(isPresented: $isShowingSettings) {
                 //
             }
+            .sheet(isPresented: $isShowingParkingMeter) {
+                if let parkingSpot = trackingVehicle?.currentParkingSpot {
+                    ParkingSpotMeter(parkingSpot: parkingSpot)
+                }
+            }
         }
     }
 }
@@ -83,10 +90,19 @@ extension ParkingMap {
     var parkedAction: some ToolbarContent {
         if let trackingVehicle {
             ToolbarItem(placement: .bottomBar) {
-                Button("SDF") {}
+                Button("Center on parked location", systemImage: trackingVehicle.icon, action: {})
+                    .tint(trackingVehicle.uiColor)
             }
 
             ToolbarSpacer(.flexible, placement: .bottomBar)
+
+            ToolbarItem(placement: .bottomBar) {
+                Button {
+                    isShowingParkingMeter = true
+                } label: {
+                    Label("Set meter timer & reminder", systemImage: "powermeter")
+                }
+            }
 
         } else {
             ToolbarItem(placement: .bottomBar) {
@@ -126,6 +142,6 @@ extension ParkingMap {
         }
 
         trackingVehicle.isParked = false
-        parkingSpot.parkEndTime = .now.roundedDownToMinute
+        parkingSpot.parkingEndTime = .now.roundedDownToMinute
     }
 }

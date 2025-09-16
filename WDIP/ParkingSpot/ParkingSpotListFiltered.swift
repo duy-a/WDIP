@@ -22,10 +22,10 @@ struct ParkingSpotListFiltered<Content: View>: View {
         let vehicleIds = vehicles.map { $0.id }
 
         let startBeforeEnd = #Predicate<ParkingSpot> { spot in
-            spot.parkStartTime <= endDate
+            spot.parkingStartTime <= endDate
         }
         let endAfterStart = #Predicate<ParkingSpot> { spot in
-            if let parkEndTime = spot.parkEndTime {
+            if let parkEndTime = spot.parkingEndTime {
                 parkEndTime >= startDate
             } else {
                 true
@@ -53,7 +53,7 @@ struct ParkingSpotListFiltered<Content: View>: View {
         }
         
         let sort = [
-            SortDescriptor(\ParkingSpot.parkStartTime, order: .reverse),
+            SortDescriptor(\ParkingSpot.parkingStartTime, order: .reverse),
             SortDescriptor(\ParkingSpot.createdAt, order: .reverse)
         ]
 
