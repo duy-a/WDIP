@@ -16,17 +16,31 @@ struct ParkingSpotList: View {
     @State private var endDateFilter: Date = .now
 
     @State private var isShowingFilters: Bool = false
+    @State private var searchText: String = ""
+    @State private var debouncedSearchText = ""
+
+    @State private var debounceTask: Task<Void, Never>? = nil
 
     var body: some View {
         NavigationStack {
             ParkingSpotListFiltered(startDate: startDateFilter,
                                     endDate: endDateFilter,
-                                    vehicles: vehiclesFilter)
+                                    vehicles: vehiclesFilter,
+                                    searchText: debouncedSearchText)
             { spot in
                 ParkingSpotListRow(parkingSpot: spot)
             }
             .onAppear {
                 setInitialFilters()
+            }
+            .searchable(text: $searchText, prompt: "Address")
+            .onChange(of: searchText) {
+                debounceTask?.cancel()
+                debounceTask = Task { @MainActor in
+                    try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 second debounce
+                    guard !Task.isCancelled else { return }
+                    debouncedSearchText = searchText
+                }
             }
             .sheetToolbar("Parking History") {
                 ToolbarItem(placement: .bottomBar) {
@@ -34,8 +48,8 @@ struct ParkingSpotList: View {
                         isShowingFilters = true
                     }
                 }
-
                 ToolbarSpacer(.flexible, placement: .bottomBar)
+                DefaultToolbarItem(kind: .search, placement: .bottomBar)
             }
             .sheet(isPresented: $isShowingFilters) {
                 ParkingSpotListFilter(vehiclesFilter: $vehiclesFilter,

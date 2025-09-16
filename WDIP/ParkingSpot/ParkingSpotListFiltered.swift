@@ -16,6 +16,7 @@ struct ParkingSpotListFiltered<Content: View>: View {
     init(startDate: Date,
          endDate: Date,
          vehicles: Set<Vehicle>,
+         searchText: String,
          @ViewBuilder content: @escaping (ParkingSpot) -> Content)
     {
         let vehicleIds = vehicles.map { $0.id }
@@ -37,6 +38,9 @@ struct ParkingSpotListFiltered<Content: View>: View {
                 false
             }
         }
+        let searchByAddress = #Predicate<ParkingSpot> { spot in
+            searchText.isEmpty || spot.address.localizedStandardContains(searchText)
+        }
 
         let combinedPredicate = #Predicate<ParkingSpot> {
             (inVehicles.evaluate($0) || vehicleIds.isEmpty)
@@ -44,6 +48,8 @@ struct ParkingSpotListFiltered<Content: View>: View {
             startBeforeEnd.evaluate($0)
             &&
             endAfterStart.evaluate($0)
+            &&
+            searchByAddress.evaluate($0)
         }
         
         let sort = [
