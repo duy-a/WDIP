@@ -91,7 +91,7 @@ struct ParkingSpotForm: View {
                 ToolbarSpacer(.fixed, placement: .topBarTrailing)
 
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Directions", systemImage: "arrow.turn.left.up", action: {})
+                    Button("Directions", systemImage: "arrow.turn.left.up", action: getDirections)
                 }
             }
             .alert("Are you sure?", isPresented: $isShowingDeleteAlert) {
@@ -113,5 +113,10 @@ extension ParkingSpotForm {
 
         modelContext.delete(parkingSpot)
         dismiss()
+    }
+
+    private func getDirections() {
+        NavigationManager.openDirectionsInAppleMaps(coordinate: parkingSpot.coordinates,
+                                                    name: parkingSpot.vehicle?.name ?? "Your parked vehicle")
     }
 }
