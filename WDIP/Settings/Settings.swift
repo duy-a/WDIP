@@ -12,6 +12,9 @@ struct Settings: View {
         NavigationStack {
             List {
                 Section {
+                    NavigationLink(destination: Feedback()) {
+                        Label("Send feedback", systemImage: "waveform.path.ecg.text.clipboard")
+                    }
                     ButtonExternalLink(title: "Join TestFlight Beta", systemImage: "paperplane", link: Constants.TESTFLIGHT_LINK)
                 }
 

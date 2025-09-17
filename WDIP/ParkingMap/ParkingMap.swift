@@ -53,7 +53,7 @@ struct ParkingMap: View {
                 ParkingSpotList(trackingVehicle: trackingVehicle)
             }
             .sheet(isPresented: $isShowingSettings) {
-                //
+                Settings()
             }
             .sheet(isPresented: $isShowingParkingMeter) {
                 if let parkingSpot = trackingVehicle?.currentParkingSpot {
