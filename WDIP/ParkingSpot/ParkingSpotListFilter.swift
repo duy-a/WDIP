@@ -1,32 +1,34 @@
 //
-//  ParkingSpotListFilters.swift
+//  ParkingSpotListFilter.swift
 //  WDIP
 //
-//  Created by Duy Anh Ngac on 3/9/25.
+//  Created by Duy Anh Ngac on 14/9/25.
 //
 
 import SwiftData
 import SwiftUI
 
-struct ParkingSpotListFilters: View {
-    @Query(sort: \Vehicle.name) private var vehicles: [Vehicle]
-
+struct ParkingSpotListFilter: View {
     @Binding var vehiclesFilter: Set<Vehicle>
     @Binding var startDateFilter: Date
     @Binding var endDateFilter: Date
 
+    var onReset: () -> Void
+
+    @Query(sort: \Vehicle.name) private var vehicles: [Vehicle]
+
     var body: some View {
         NavigationStack {
             Form {
-                Section("Parking Period") {
-                    DatePicker("Start Date", selection: $startDateFilter)
-                    DatePicker("End Date", selection: $endDateFilter, in: startDateFilter ... .now)
+                Section("Date Range") {
+                    DatePicker("Start Date", selection: $startDateFilter, in: ...Date.now)
+                    DatePicker("End Date", selection: $endDateFilter, in: ...Date.now)
                 }
 
                 Section {
                     ForEach(vehicles) { vehicle in
                         Button {
-                            toggleVehicleFilter(vehicle: vehicle)
+                            toggleVehicleSelection(vehicle: vehicle)
                         } label: {
                             HStack {
                                 Label {
@@ -53,34 +55,24 @@ struct ParkingSpotListFilters: View {
                     }
                 }
             }
-            .sheetToolbar("Filter") {
-                toolbarContent
+            .onAppear {
+                if vehiclesFilter.isEmpty {
+                    vehiclesFilter = Set(vehicles)
+                }
+            }
+            .sheetToolbar("Filters") {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Reset Filters", systemImage: "arrow.trianglehead.counterclockwise") {
+                        onReset()
+                    }
+                }
             }
         }
-        .presentationDetents([.medium, .large])
     }
 }
 
-// #Preview {
-//    ParkingSpotListFilters(parkingSpots: [])
-// }
-
-extension ParkingSpotListFilters {
-    @ToolbarContentBuilder
-    var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .topBarTrailing) {
-            Button("Reset Filters", systemImage: "arrow.trianglehead.counterclockwise", action: triggerResetFilters)
-        }
-    }
-}
-
-extension ParkingSpotListFilters {
-    private func triggerResetFilters() {
-        startDateFilter = .distantPast
-        endDateFilter = .now
-    }
-
-    private func toggleVehicleFilter(vehicle: Vehicle) {
+extension ParkingSpotListFilter {
+    private func toggleVehicleSelection(vehicle: Vehicle) {
         if vehiclesFilter.contains(vehicle) {
             vehiclesFilter.remove(vehicle)
         } else {

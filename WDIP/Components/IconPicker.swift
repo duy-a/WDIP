@@ -2,7 +2,7 @@
 //  IconPicker.swift
 //  WDIP
 //
-//  Created by Duy Anh Ngac on 25/7/25.
+//  Created by Duy Anh Ngac on 13/9/25.
 //
 
 import SwiftUI
@@ -35,14 +35,6 @@ struct IconPicker: View {
                 }
                 .buttonStyle(.plain)
             }
-        }
-    }
-}
-
-#Preview {
-    Form {
-        Section {
-            IconPicker(selectedIcon: .constant(.car))
         }
     }
 }

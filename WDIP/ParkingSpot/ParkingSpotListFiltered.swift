@@ -2,57 +2,68 @@
 //  ParkingSpotListFiltered.swift
 //  WDIP
 //
-//  Created by Duy Anh Ngac on 12/9/25.
+//  Created by Duy Anh Ngac on 15/9/25.
 //
 
 import SwiftData
 import SwiftUI
 
-struct ParkingSpotListFiltered: View {
+struct ParkingSpotListFiltered<Content: View>: View {
     @Query private var parkingSpots: [ParkingSpot]
 
-    init(vehicles: Set<Vehicle>, startDate: Date, endDate: Date, searchText: String) {
-        let vehicleIds = vehicles.map { $0.persistentModelID }
+    var content: (ParkingSpot) -> Content
 
-        if searchText.isEmpty {
-            self._parkingSpots = Query(
-                filter: #Predicate { spot in
+    init(startDate: Date,
+         endDate: Date,
+         vehicles: Set<Vehicle>,
+         searchText: String,
+         @ViewBuilder content: @escaping (ParkingSpot) -> Content)
+    {
+        let vehicleIds = vehicles.map { $0.id }
 
-                    if let vehicle = spot.vehicle {
-                        vehicleIds.contains(vehicle.persistentModelID) &&
-                            spot.parkingStartTime <= endDate &&
-                            spot.parkingEndTime >= startDate
-                    } else {
-                        false
-                    }
-
-                },
-                sort: \.parkingStartTime,
-                order: .reverse
-            )
-        } else {
-            self._parkingSpots = Query(
-                filter: #Predicate { spot in
-
-                    if let vehicle = spot.vehicle {
-                        vehicleIds.contains(vehicle.persistentModelID) &&
-                            spot.parkingStartTime <= endDate &&
-                            spot.parkingEndTime >= startDate &&
-                            spot.address.localizedStandardContains(searchText)
-                    } else {
-                        false
-                    }
-
-                },
-                sort: \.parkingStartTime,
-                order: .reverse
-            )
+        let startBeforeEnd = #Predicate<ParkingSpot> { spot in
+            spot.parkingStartTime <= endDate
         }
+        let endAfterStart = #Predicate<ParkingSpot> { spot in
+            if let parkEndTime = spot.parkingEndTime {
+                parkEndTime >= startDate
+            } else {
+                true
+            }
+        }
+        let inVehicles = #Predicate<ParkingSpot> { spot in
+            if let vehicle = spot.vehicle {
+                vehicleIds.contains(vehicle.id)
+            } else {
+                false
+            }
+        }
+        let searchByAddress = #Predicate<ParkingSpot> { spot in
+            searchText.isEmpty || spot.address.localizedStandardContains(searchText)
+        }
+
+        let combinedPredicate = #Predicate<ParkingSpot> {
+            (inVehicles.evaluate($0) || vehicleIds.isEmpty)
+            &&
+            startBeforeEnd.evaluate($0)
+            &&
+            endAfterStart.evaluate($0)
+            &&
+            searchByAddress.evaluate($0)
+        }
+        
+        let sort = [
+            SortDescriptor(\ParkingSpot.parkingStartTime, order: .reverse),
+            SortDescriptor(\ParkingSpot.createdAt, order: .reverse)
+        ]
+
+        self._parkingSpots = Query(filter: combinedPredicate, sort: sort)
+        self.content = content
     }
 
     var body: some View {
-        List(parkingSpots) { parkingSpot in
-            ParkingSpotListRow(parkingSpot: parkingSpot)
+        List(parkingSpots) { spot in
+            content(spot)
         }
     }
 }

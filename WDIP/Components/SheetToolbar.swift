@@ -2,7 +2,7 @@
 //  SheetToolbar.swift
 //  WDIP
 //
-//  Created by Duy Anh Ngac on 9/9/25.
+//  Created by Duy Anh Ngac on 13/9/25.
 //
 
 import SwiftUI
@@ -11,12 +11,7 @@ struct SheetToolbar<Items: ToolbarContent>: ViewModifier {
     @Environment(\.dismiss) private var dismiss
 
     var title: String
-    var items: Items
-
-    init(title: String, @ToolbarContentBuilder items: () -> Items) {
-        self.title = title
-        self.items = items()
-    }
+    @ToolbarContentBuilder var items: () -> Items
 
     func body(content: Content) -> some View {
         content
@@ -29,7 +24,7 @@ struct SheetToolbar<Items: ToolbarContent>: ViewModifier {
                     }
                 }
 
-                items
+                items()
             }
     }
 }
@@ -54,12 +49,12 @@ struct BasicSheetToolbar: ViewModifier {
 
 extension View {
     func sheetToolbar<Actions: ToolbarContent>(_ title: String,
-                                               @ToolbarContentBuilder items: () -> Actions) -> some View
+                                               @ToolbarContentBuilder items: @escaping () -> Actions) -> some View
     {
         modifier(SheetToolbar(title: title, items: items))
     }
 
-    func sheetToolbar(_ title: String) -> some View {
+    func sheetToolbar(_ title: String, isDismissDisabled: Bool = false) -> some View {
         modifier(BasicSheetToolbar(title: title))
     }
 }

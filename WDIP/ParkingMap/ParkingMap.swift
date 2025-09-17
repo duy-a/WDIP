@@ -2,7 +2,7 @@
 //  ParkingMap.swift
 //  WDIP
 //
-//  Created by Duy Anh Ngac on 21/8/25.
+//  Created by Duy Anh Ngac on 13/9/25.
 //
 
 import MapKit
@@ -11,30 +11,35 @@ import SwiftUI
 
 struct ParkingMap: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(LocationManager.self) private var locationManager: LocationManager
 
-    @State private var locationManager = LocationManager.shared
-
-    @Query(sort: \Vehicle.name) private var vehicles: [Vehicle]
+    @State private var trackingVehicle: Vehicle? = nil
 
     @State private var mapCameraPosition: MapCameraPosition = .userLocation(fallback: .automatic)
     @State private var mapCenterCoordinates: CLLocationCoordinate2D? = nil
 
-    @State private var trackingVehicle: Vehicle = .init()
-    @State private var sheetView: SheetView? = nil
+    @State private var isShowingVehicleList: Bool = false
+    @State private var isShowingParkingHistory: Bool = false
+    @State private var isShowingSettings: Bool = false
+    @State private var isShowingParkingMeter: Bool = false
+    @State private var isShowingCurrentParkingSpotInfo: Bool = false
 
-    var currentParkingSpotCoordinates: CLLocationCoordinate2D? {
-        guard trackingVehicle.isParked else { return nil }
-        return trackingVehicle.activeParkingSpot?.coordinates
-    }
+    @State private var timer: TimerManager = .init(endTime: .now)
+
+    let appleParkCoordinates: CLLocationCoordinate2D = .init(latitude: 37.33478414571969, longitude: -122.00894818929088)
+    @State private var markerHeight: CGFloat = 0
 
     var body: some View {
         NavigationStack {
             Map(position: $mapCameraPosition) {
                 UserAnnotation()
 
-                if let currentParkingSpotCoordinates, trackingVehicle.isParked {
-                    Annotation(trackingVehicle.name, coordinate: currentParkingSpotCoordinates, anchor: .bottom) {
-                        ParkingMapMarker(actionName: "Unpark", icon: trackingVehicle.icon, color: trackingVehicle.uiColor, action: unpark)
+                if let trackingVehicle, let coordinates = trackingVehicle.currentParkingSpot?.coordinates {
+                    Annotation(trackingVehicle.name, coordinate: coordinates, anchor: .bottom) {
+                        ParkingMapMarker(actionName: "Unpark",
+                                         icon: trackingVehicle.icon,
+                                         color: trackingVehicle.uiColor,
+                                         action: unpark)
                     }
                 }
             }
@@ -46,65 +51,75 @@ struct ParkingMap: View {
                 MapCompass()
             }
             .overlay {
-                ParkingMapMarker(actionName: "Park Here", icon: trackingVehicle.icon, color: trackingVehicle.uiColor, action: parkHere)
-                    .alignmentGuide(VerticalAlignment.center) { d in d[.bottom] }
-                    .opacity(trackingVehicle.isParked ? 0 : 1)
-                    .disabled(trackingVehicle.isParked)
+                if let trackingVehicle, !trackingVehicle.isParked {
+                    ParkingMapMarker(actionName: "Park Here",
+                                     icon: trackingVehicle.icon,
+                                     color: trackingVehicle.uiColor,
+                                     action: park)
+                        .background(GeometryReader { geo in
+                            Color.clear.onAppear {
+                                markerHeight = geo.size.height
+                            }
+                        })
+                        .offset(y: -(markerHeight / 2))
+                }
             }
             .onAppear {
-                onStart()
-                if let parkingSpot = trackingVehicle.activeParkingSpot, parkingSpot.hasRunningTimer {
-                    parkingSpot.starTimer()
+                locationManager.requestWhenInUseAuthorization()
+
+                if trackingVehicle == nil {
+                    isShowingVehicleList = true
+                }
+            }
+            .onChange(of: trackingVehicle?.currentParkingSpot?.timerEndTime) {
+                if let timerEndTime = trackingVehicle?.currentParkingSpot?.timerEndTime {
+                    timer.endTime = timerEndTime
+                    timer.start()
+                } else {
+                    timer.stop()
                 }
             }
             .toolbar {
                 menu
-                parkedActions
+                parkedAction
             }
-            .sheet(item: $sheetView) { sheet in
-                sheet.view
+            .sheet(isPresented: $isShowingVehicleList) {
+                VehicleList(trackingVehicle: $trackingVehicle)
             }
-            .onChange(of: vehicles) { oldVehicles, newVehicles in
-                if oldVehicles.isEmpty && !newVehicles.isEmpty || !newVehicles.contains(trackingVehicle) {
-                    trackFirstVehicle(vehicles: newVehicles)
+            .sheet(isPresented: $isShowingParkingHistory) {
+                ParkingSpotList(trackingVehicle: trackingVehicle)
+            }
+            .sheet(isPresented: $isShowingSettings) {
+                Settings()
+            }
+            .sheet(isPresented: $isShowingParkingMeter) {
+                if let parkingSpot = trackingVehicle?.currentParkingSpot {
+                    ParkingSpotMeter(parkingSpot: parkingSpot)
+                }
+            }
+            .sheet(isPresented: $isShowingCurrentParkingSpotInfo) {
+                if let parkingSpot = trackingVehicle?.currentParkingSpot {
+                    ParkingSpotForm(parkingSpot: parkingSpot)
                 }
             }
         }
     }
 }
 
-#Preview {
-    ParkingMap()
-}
-
-// MARK: Parking Spot Selection Indicator
-
-private extension ParkingMap {
-    var parkingPin: some View {
-        VStack(spacing: 0) {
-            Button("Park Here", systemImage: trackingVehicle.icon, action: parkHere)
-                .buttonStyle(.glassProminent)
-                .tint(trackingVehicle.uiColor)
-
-            Label("Parking Location Indicator", systemImage: "arrowtriangle.down.fill")
-                .foregroundStyle(trackingVehicle.uiColor)
-                .labelStyle(.iconOnly)
-                .imageScale(.large)
-        }
-        .alignmentGuide(VerticalAlignment.center) { d in d[.bottom] }
-    }
-}
-
-// MARK: Toolbar menu
-
-private extension ParkingMap {
+extension ParkingMap {
     @ToolbarContentBuilder
     var menu: some ToolbarContent {
         ToolbarItem(placement: .topBarLeading) {
             Menu {
-                Button("Vehicles", systemImage: "car.2", action: showVehicleList)
-                Button("Parking History", systemImage: "parkingsign.square", action: showParkingHistory)
-                Button("Settings", systemImage: "gearshape", action: showSettings)
+                Button("Vehicles", systemImage: "car.2") {
+                    isShowingVehicleList = true
+                }
+                Button("Parking History", systemImage: "parkingsign.square") {
+                    isShowingParkingHistory = true
+                }
+                Button("Settings", systemImage: "gearshape") {
+                    isShowingSettings = true
+                }
             } label: {
                 Label("Menu", systemImage: "list.bullet")
             }
@@ -112,103 +127,90 @@ private extension ParkingMap {
     }
 }
 
-// MARK: Toolbar main action buttons when vehicle is parked
-
-private extension ParkingMap {
+extension ParkingMap {
     @ToolbarContentBuilder
-    var parkedActions: some ToolbarContent {
-        if let activeParkingSpot = trackingVehicle.activeParkingSpot, trackingVehicle.isParked {
+    var parkedAction: some ToolbarContent {
+        if let trackingVehicle, trackingVehicle.isParked {
             ToolbarItem(placement: .bottomBar) {
-                Button("Center on the Parking Spot", systemImage: trackingVehicle.icon, action: centerOnParkedSpot)
+                Button("Center on parked location", systemImage: trackingVehicle.icon, action: centerOnParkedSpot)
+                    .tint(trackingVehicle.uiColor)
             }
 
             ToolbarSpacer(.flexible, placement: .bottomBar)
 
             ToolbarItem(placement: .bottomBar) {
-                if let parkingSpot = trackingVehicle.activeParkingSpot, parkingSpot.timerRemainingTime > 0 {
-                    Button(action: showParkingSpotTimer) {
+                Button {
+                    isShowingParkingMeter = true
+                } label: {
+                    if timer.remainingTime > 0 {
                         HStack {
                             Image(systemName: "powermeter")
-                            Text(TimerManager.formatRemainingTime(parkingSpot.timerRemainingTime))
+                            Text(timer.formattedRemainingTime)
                         }
+                    } else {
+                        Label("Set meter timer & reminder", systemImage: "powermeter")
                     }
-                } else {
-                    Button("Timers & Reminders", systemImage: "powermeter", action: showParkingSpotTimer)
                 }
             }
 
             ToolbarSpacer(.fixed, placement: .bottomBar)
 
             ToolbarItemGroup(placement: .bottomBar) {
-                Button("Direction To Parking Spot", systemImage: "arrow.turn.left.up", action: activeParkingSpot.getDirectionsInMaps)
-                Button("Parking Spot Info", systemImage: "info", action: showCurrentParkingSpotInfo)
+                Button("Direction To Parking Spot", systemImage: "arrow.turn.left.up", action: getDirectionToParkedLocation)
+                Button("Parking Spot Info", systemImage: "info") { isShowingCurrentParkingSpotInfo = true }
+            }
+
+        } else if trackingVehicle == nil {
+            ToolbarItem(placement: .bottomBar) {
+                Button("Track a vehicle") {
+                    isShowingVehicleList = true
+                }
+                .buttonStyle(.glassProminent)
+                .controlSize(.large)
+                .tint(.primary)
             }
         }
     }
 }
 
-private extension ParkingMap {
-    private func showVehicleList() {
-        sheetView = SheetView(view: VehicleList(trackingVehicle: $trackingVehicle))
-    }
-
-    private func showParkingHistory() {
-        sheetView = SheetView(view: ParkingSpotList(trackingVehicle: $trackingVehicle))
-    }
-
-    private func showSettings() {
-        sheetView = SheetView(view: Settings())
-    }
-
-    private func showCurrentParkingSpotInfo() {
-        guard let parkingSpot = trackingVehicle.activeParkingSpot else { return }
-        sheetView = SheetView(view: ParkingSpotForm(parkingSpot: parkingSpot))
-    }
-
-    private func showParkingSpotTimer() {
-        guard let parkingSpot = trackingVehicle.activeParkingSpot else { return }
-//        sheetView = SheetView(view: ParkingSpotMeter(parkingSpot: parkingSpot))
-        sheetView = SheetView(view: ParkingSpotMeter(parkingSpot: parkingSpot))
-    }
-
-    private func onStart() {
-        locationManager.requestWhenInUseAuthorization()
-        trackFirstVehicle(vehicles: vehicles)
-    }
-
-    private func trackFirstVehicle(vehicles: [Vehicle]) {
-        guard let vehicle = vehicles.first else { return showVehicleList() }
-
-        trackingVehicle = vehicle
-    }
-
-    private func parkHere() {
-        guard let mapCenterCoordinates else { return }
+extension ParkingMap {
+    private func park() {
+        guard let trackingVehicle, let mapCenterCoordinates else { return }
 
         let parkingSpot = ParkingSpot(coordinates: mapCenterCoordinates)
-        parkingSpot.isCurrentParkingSpot = true
-        parkingSpot.vehicle = trackingVehicle
 
+        trackingVehicle.parkingSpots?.append(parkingSpot)
         trackingVehicle.isParked = true
 
         modelContext.insert(parkingSpot)
-    }
 
-    private func unpark() {
-        guard let parkingSpot = trackingVehicle.activeParkingSpot else { return }
-        parkingSpot.isCurrentParkingSpot = false
-        parkingSpot.parkingEndTime = .now
-        trackingVehicle.isParked = false
-
-        if parkingSpot.hasRunningTimer {
-            parkingSpot.stopTimer()
-            parkingSpot.cancelReminder()
+        Task.detached {
+            parkingSpot.address = await LocationManager.getAddressBy(coordinates: parkingSpot.coordinates)
         }
     }
 
-    private func centerOnParkedSpot() {
-        guard let currentParkingSpotCoordinates else { return }
+    private func unpark() {
+        guard let trackingVehicle,
+              trackingVehicle.isParked,
+              let parkingSpot = trackingVehicle.currentParkingSpot
+        else {
+            return
+        }
 
-        mapCameraPosition = .camera(MapCamera(centerCoordinate: currentParkingSpotCoordinates, distance: 3500))
+        trackingVehicle.isParked = false
+        parkingSpot.parkingEndTime = .now.roundedDownToMinute
+    }
+
+    private func centerOnParkedSpot() {
+        guard let trackingVehicle, let coordinates = trackingVehicle.currentParkingSpot?.coordinates else { return }
+
+        mapCameraPosition = .camera(MapCamera(centerCoordinate: coordinates, distance: 3500))
+    }
+
+    private func getDirectionToParkedLocation() {
+        if let parkingSpot = trackingVehicle?.currentParkingSpot {
+            NavigationManager.openDirectionsInAppleMaps(coordinate: parkingSpot.coordinates,
+                                                        name: parkingSpot.vehicle?.name ?? "Your parked vehicle")
+        }
     }
 }

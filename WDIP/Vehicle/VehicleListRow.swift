@@ -2,45 +2,49 @@
 //  VehicleListRow.swift
 //  WDIP
 //
-//  Created by Duy Anh Ngac on 21/8/25.
+//  Created by Duy Anh Ngac on 13/9/25.
 //
 
-import SwiftData
 import SwiftUI
 
 struct VehicleListRow: View {
-    @Bindable var vehicle: Vehicle
+    @Environment(\.dismiss) private var dismiss
 
-    var primaryAction: () -> Void
-    var secondaryAction: () -> Void
+    var vehicle: Vehicle
+
+    @Binding var trackingVehicle: Vehicle?
+
+    @State private var isShowingVehicleInfo: Bool = false
 
     var body: some View {
         HStack {
             Label {
                 Text(vehicle.name)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
             } icon: {
                 Image(systemName: vehicle.icon)
                     .foregroundStyle(vehicle.uiColor)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
 
-            Button("Track Vehicle", systemImage: "location", action: primaryAction)
-                .labelStyle(.iconOnly)
-                .buttonStyle(.glassProminent)
+            Button("Track Vehicle", systemImage: "location") {
+                trackingVehicle = vehicle
+                dismiss()
+            }
+            .labelStyle(.iconOnly)
+            .buttonStyle(.glassProminent)
 
-            Button("Show Vehicle Info", systemImage: "info", action: secondaryAction)
-                .labelStyle(.iconOnly)
-                .buttonStyle(.glass)
+            Button("Show Vehicle Info", systemImage: "info") {
+                isShowingVehicleInfo = true
+            }
+            .labelStyle(.iconOnly)
+            .buttonStyle(.glass)
         }
-    }
-}
-
-#Preview {
-    List {
-        VehicleListRow(vehicle: StoreProvider.sampleVehicle) {
-            //
-        } secondaryAction: {
-            //
+        .sheet(isPresented: $isShowingVehicleInfo) {
+            VehicleForm(vehicle: vehicle) {
+                trackingVehicle = nil
+            }
         }
     }
 }

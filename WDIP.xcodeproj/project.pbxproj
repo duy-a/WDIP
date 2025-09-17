@@ -11,7 +11,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		6E55EFBF2E542DF20023DF16 /* Exceptions for "WDIP" folder in "WDIP" target */ = {
+		6E8B46882E75641F00CFD4B8 /* Exceptions for "WDIP" folder in "WDIP" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
@@ -21,10 +21,10 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		6EE27AB02E2E44E600BCF764 /* WDIP */ = {
+		6E8B46842E75641F00CFD4B8 /* WDIP */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				6E55EFBF2E542DF20023DF16 /* Exceptions for "WDIP" folder in "WDIP" target */,
+				6E8B46882E75641F00CFD4B8 /* Exceptions for "WDIP" folder in "WDIP" target */,
 			);
 			path = WDIP;
 			sourceTree = "<group>";
@@ -45,7 +45,7 @@
 		6EE27AA52E2E44E600BCF764 = {
 			isa = PBXGroup;
 			children = (
-				6EE27AB02E2E44E600BCF764 /* WDIP */,
+				6E8B46842E75641F00CFD4B8 /* WDIP */,
 				6EE27AAF2E2E44E600BCF764 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -74,7 +74,7 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				6EE27AB02E2E44E600BCF764 /* WDIP */,
+				6E8B46842E75641F00CFD4B8 /* WDIP */,
 			);
 			name = WDIP;
 			packageProductDependencies = (

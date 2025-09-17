@@ -2,7 +2,7 @@
 //  ParkingSpotForm.swift
 //  WDIP
 //
-//  Created by Duy Anh Ngac on 26/8/25.
+//  Created by Duy Anh Ngac on 15/9/25.
 //
 
 import MapKit
@@ -16,8 +16,25 @@ struct ParkingSpotForm: View {
     @Bindable var parkingSpot: ParkingSpot
 
     @State private var mapCameraPosition: MapCameraPosition = .automatic
-
     @State private var isShowingDeleteAlert: Bool = false
+
+    var parkingDuration: String {
+        guard let parkingEndTime = parkingSpot.parkingEndTime else { return "" }
+        let interval = Int(parkingEndTime.timeIntervalSince(parkingSpot.parkingStartTime))
+
+        let days = interval / 86400
+        let hours = (interval % 86400) / 3600
+        let minutes = (interval % 3600) / 60
+        let seconds = interval % 60
+
+        if days > 0 {
+            // Format as "Xd hh:mm:ss"
+            return String(format: "%dd %02d:%02d:%02d", days, hours, minutes, seconds)
+        } else {
+            // Format as "hh:mm:ss"
+            return String(format: "%02d:%02d:%02d", hours, minutes, seconds)
+        }
+    }
 
     var body: some View {
         NavigationStack {
@@ -46,10 +63,10 @@ struct ParkingSpotForm: View {
                     }
 
                     Label {
-                        if parkingSpot.isCurrentParkingSpot {
-                            Text("Parked Here")
+                        if let parkingEndTime = parkingSpot.parkingEndTime {
+                            Text(parkingEndTime, format: .dateTime)
                         } else {
-                            Text(parkingSpot.parkingEndTime, format: .dateTime)
+                            Text("Currently Parked Here")
                         }
                     } icon: {
                         Image(systemName: "clock.badge")
@@ -57,51 +74,52 @@ struct ParkingSpotForm: View {
                 } header: {
                     Text("Parking time")
                 } footer: {
-                    Text("Duration: \(parkingSpot.parkingDuration)")
+                    Text("Total Duration: \(parkingDuration)")
                 }
             }
+            .task {
+                if parkingSpot.address.isEmpty {
+                    parkingSpot.address = await LocationManager.getAddressBy(coordinates: parkingSpot.coordinates)
+                }
+            }
+            .onAppear {
+                mapCameraPosition = .region(parkingSpot.coordinateRegion)
+            }
             .sheetToolbar("Parking Info") {
-                toolbarContent
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Delete", systemImage: "trash", action: { isShowingDeleteAlert = true })
+                        .tint(.red)
+                }
+
+                ToolbarSpacer(.fixed, placement: .topBarTrailing)
+
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Directions", systemImage: "arrow.turn.left.up", action: getDirections)
+                }
             }
             .alert("Are you sure?", isPresented: $isShowingDeleteAlert) {
                 Button("Cancel", role: .cancel) {}
-                Button("Delete", role: .destructive, action: delete)
+                Button("Delete", role: .destructive, action: deleteParkingSpot)
             }
-            .onAppear(perform: onStart)
-        }
-    }
-}
-
-#Preview {
-    ParkingSpotForm(parkingSpot: StoreProvider.sampleParkingSpot1)
-}
-
-extension ParkingSpotForm {
-    @ToolbarContentBuilder
-    var toolbarContent: some ToolbarContent {
-        if !parkingSpot.isCurrentParkingSpot {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button("Delete", systemImage: "trash", role: .destructive, action: { isShowingDeleteAlert = true })
-                    .tint(.red)
-            }
-        }
-
-        ToolbarSpacer(.fixed, placement: .topBarTrailing)
-
-        ToolbarItem(placement: .topBarTrailing) {
-            Button("Directions", systemImage: "arrow.turn.left.up", action: parkingSpot.getDirectionsInMaps)
         }
     }
 }
 
 extension ParkingSpotForm {
-    private func onStart() {
-        parkingSpot.getAddress()
-        mapCameraPosition = .camera(MapCamera(centerCoordinate: parkingSpot.coordinates, distance: 1000))
-    }
+    private func deleteParkingSpot() {
+        if let vehicle = parkingSpot.vehicle,
+           vehicle.isParked,
+           vehicle.currentParkingSpot == parkingSpot
+        {
+            parkingSpot.vehicle?.isParked = false
+        }
 
-    private func delete() {
         modelContext.delete(parkingSpot)
         dismiss()
+    }
+
+    private func getDirections() {
+        NavigationManager.openDirectionsInAppleMaps(coordinate: parkingSpot.coordinates,
+                                                    name: parkingSpot.vehicle?.name ?? "Your parked vehicle")
     }
 }

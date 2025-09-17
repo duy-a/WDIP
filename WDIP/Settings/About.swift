@@ -2,7 +2,7 @@
 //  About.swift
 //  WDIP
 //
-//  Created by Duy Anh Ngac on 1/9/25.
+//  Created by Duy Anh Ngac on 17/9/25.
 //
 
 import SwiftUI
@@ -38,10 +38,6 @@ struct About: View {
         .navigationTitle("About")
         .navigationBarTitleDisplayMode(.inline)
     }
-}
-
-#Preview {
-    About()
 }
 
 extension Bundle {

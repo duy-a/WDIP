@@ -2,7 +2,7 @@
 //  ParkingMapMarker.swift
 //  WDIP
 //
-//  Created by Duy Anh Ngac on 26/8/25.
+//  Created by Duy Anh Ngac on 17/9/25.
 //
 
 import SwiftUI
@@ -24,11 +24,5 @@ struct ParkingMapMarker: View {
                 .labelStyle(.iconOnly)
                 .imageScale(.large)
         }
-    }
-}
-
-#Preview {
-    ParkingMapMarker(actionName: "Park here", icon: "car", color: .red) {
-        //
     }
 }

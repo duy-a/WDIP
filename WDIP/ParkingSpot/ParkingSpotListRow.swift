@@ -2,48 +2,49 @@
 //  ParkingSpotListRow.swift
 //  WDIP
 //
-//  Created by Duy Anh Ngac on 25/8/25.
+//  Created by Duy Anh Ngac on 14/9/25.
 //
 
-import SwiftData
 import SwiftUI
 
 struct ParkingSpotListRow: View {
-    @Bindable var parkingSpot: ParkingSpot
+    var parkingSpot: ParkingSpot
 
     @State private var showInfo: Bool = false
-
-    var vehicle: Vehicle {
-        parkingSpot.vehicle ?? Vehicle(name: "???", icon: "questionmark", color: "gray")
-    }
 
     var body: some View {
         HStack {
             Label {
-                VStack(alignment: .leading, spacing: 10) {
+                VStack(alignment: .leading, spacing: 7) {
                     HStack {
-                        Text(parkingSpot.parkingStartTime, format: .dateTime)
+                        Text(parkingSpot.vehicle?.name ?? "")
+                            .lineLimit(1)
+                            .truncationMode(.tail)
                             .foregroundStyle(.secondary)
+                            .fontWeight(.semibold)
 
                         Spacer()
 
-                        if parkingSpot.isCurrentParkingSpot {
+                        if parkingSpot.parkingEndTime == nil {
                             Text("Active")
                                 .foregroundStyle(.green)
+                        } else {
+                            Text(parkingSpot.parkingStartTime, format: .dateTime)
+                                .foregroundStyle(.secondary)
                         }
                     }
                     .font(.footnote)
 
                     if parkingSpot.address.isEmpty {
-                        Text("Getting street information ...")
+                        Text("Getting adress information ...")
                             .italic()
                     } else {
                         Text(parkingSpot.address)
                     }
                 }
             } icon: {
-                Image(systemName: vehicle.icon)
-                    .foregroundStyle(vehicle.uiColor)
+                Image(systemName: parkingSpot.vehicle?.icon ?? "questionmark")
+                    .foregroundStyle(parkingSpot.vehicle?.uiColor ?? .primary)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
 
@@ -53,9 +54,13 @@ struct ParkingSpotListRow: View {
             .labelStyle(.iconOnly)
             .buttonStyle(.glass)
         }
-        .onAppear(perform: parkingSpot.getAddress)
         .sheet(isPresented: $showInfo) {
             ParkingSpotForm(parkingSpot: parkingSpot)
+        }
+        .task {
+            if parkingSpot.address.isEmpty {
+                parkingSpot.address = await LocationManager.getAddressBy(coordinates: parkingSpot.coordinates)
+            }
         }
     }
 }

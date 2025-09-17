@@ -10,23 +10,15 @@ import SwiftUI
 
 @main
 struct WDIPApp: App {
-//    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
-
-    @AppStorage("isViewedOnboarding") private var isViewedOnboarding: Bool = false
+    @State private var locationManager: LocationManager = .shared
     @State private var notificationManager: NotificationManager = .shared
 
     var body: some Scene {
         WindowGroup {
-            if isViewedOnboarding {
-                ParkingMap()
-                    .onAppear {
-                        StoreProvider.shared.migrate()
-                    }
-            } else {
-                Onboarding()
-            }
+            ParkingMap()
         }
         .modelContainer(StoreProvider.shared.modelContainer)
+        .environment(locationManager)
         .environment(notificationManager)
     }
 }

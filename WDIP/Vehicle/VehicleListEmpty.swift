@@ -2,13 +2,13 @@
 //  VehicleListEmpty.swift
 //  WDIP
 //
-//  Created by Duy Anh Ngac on 21/8/25.
+//  Created by Duy Anh Ngac on 13/9/25.
 //
 
 import SwiftUI
 
 struct VehicleListEmpty: View {
-    var action: () -> Void
+    @State private var isShowingVehicleForm: Bool = false
 
     var body: some View {
         ContentUnavailableView {
@@ -16,15 +16,14 @@ struct VehicleListEmpty: View {
         } description: {
             Text("Add a vehicle now to start tracking")
         } actions: {
-            Button("Add vehicle", systemImage: "plus", action: action)
-                .buttonStyle(.glassProminent)
-                .controlSize(.extraLarge)
+            Button("Add vehicle", systemImage: "plus") {
+                isShowingVehicleForm = true
+            }
+            .buttonStyle(.glassProminent)
+            .controlSize(.extraLarge)
         }
-    }
-}
-
-#Preview {
-    VehicleListEmpty {
-        //
+        .sheet(isPresented: $isShowingVehicleForm) {
+            VehicleForm()
+        }
     }
 }

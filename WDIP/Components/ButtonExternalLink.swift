@@ -2,7 +2,7 @@
 //  ButtonExternalLink.swift
 //  WDIP
 //
-//  Created by Duy Anh Ngac on 3/9/25.
+//  Created by Duy Anh Ngac on 17/9/25.
 //
 
 import SwiftUI
@@ -32,8 +32,4 @@ struct ButtonExternalLink: View {
         }
         .buttonStyle(.plain)
     }
-}
-
-#Preview {
-    ButtonExternalLink(title: "", link: "")
 }

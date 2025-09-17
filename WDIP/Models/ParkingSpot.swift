@@ -2,46 +2,30 @@
 //  ParkingSpot.swift
 //  WDIP
 //
-//  Created by Duy Anh Ngac on 23/7/25.
+//  Created by Duy Anh Ngac on 13/9/25.
 //
 
-import CoreLocation
 import Foundation
 import MapKit
 import SwiftData
 
 @Model
 final class ParkingSpot {
+    var id: String = UUID().uuidString
     var latitude: Double = 0.0
     var longitude: Double = 0.0
+    var parkingStartTime: Date = Date.now.roundedDownToMinute
+    var parkingEndTime: Date?
     var address: String = ""
-    var parkingStartTime: Date = Date.now.roundedToNearestMinute
-    var parkingEndTime: Date = Date.now.roundedToNearestMinute
-    var notes: String = ""
-
-    var isCurrentParkingSpot: Bool = false
-
-    var hasRunningTimer: Bool = false
     var timerEndTime: Date?
-
-    var hasReminder: Bool = false
     var reminderOption: Int?
-    var reminderTime: Date?
-
-    @Attribute(.ephemeral) var timerRemainingTime: TimeInterval = 0
-    @Transient var timerTask: Task<Void, Never>? = nil
+    var reminderEndTime: Date?
+    var createdAt: Date = Date.now
+    var notes: String = ""
 
     var vehicle: Vehicle?
 
-    init(latitude: Double = 0, longitude: Double = 0) {
-        self.latitude = latitude
-        self.longitude = longitude
-
-        getAddress()
-    }
-
-    convenience init(coordinates: CLLocationCoordinate2D) {
-        self.init()
+    init(coordinates: CLLocationCoordinate2D) {
         self.latitude = coordinates.latitude
         self.longitude = coordinates.longitude
     }
@@ -50,66 +34,40 @@ final class ParkingSpot {
         CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
     }
 
-    func getDirectionsInMaps() {
-        Task {
-            guard let mkAddress = await getMKAdress() else { return }
-            let location = CLLocation(latitude: latitude, longitude: longitude)
-
-            let destinationMapItem = MKMapItem(location: location, address: mkAddress)
-            destinationMapItem.name = vehicle?.name
-
-            let launchOptions = [MKLaunchOptionsDirectionsModeKey: MKLaunchOptionsDirectionsModeDriving]
-
-            destinationMapItem.openInMaps(launchOptions: launchOptions)
-        }
+    var coordinateRegion: MKCoordinateRegion {
+        MKCoordinateRegion(center: coordinates,
+                           span: .init(latitudeDelta: 0.001, longitudeDelta: 0.001))
     }
 
-    var parkingDuration: String {
-        let calendar = Calendar.current
-        let startTime: Date = parkingStartTime
-        var endTime: Date = isCurrentParkingSpot ? .now : parkingEndTime
+    var notificationId: String {
+        guard let timerEndTime else { return "" }
 
-        if isCurrentParkingSpot {
-            endTime = .now
-        }
+        let latStr = String(format: "%.5f", latitude)
+        let lonStr = String(format: "%.5f", longitude)
+        let timestamp = Int(timerEndTime.timeIntervalSince1970)
 
-        var totalMinutes = calendar.dateComponents([.minute], from: startTime, to: endTime).minute ?? 0
-        totalMinutes += 1
-
-        if totalMinutes < 60 {
-            return "\(totalMinutes) minute" + (totalMinutes == 1 ? "" : "s")
-        }
-
-        let totalHours = totalMinutes / 60
-        if totalHours < 24 {
-            return "\(totalHours) hour" + (totalHours == 1 ? "" : "s")
-        }
-
-        let totalDays = totalHours / 24 // Or totalMinutes / (60 * 24)
-        return "\(totalDays) day" + (totalDays == 1 ? "" : "s")
+        return "parking_\(latStr)_\(lonStr)_\(timestamp)"
     }
 }
 
 extension ParkingSpot {
-    func getAddress() {
-        Task {
-            if self.address.isEmpty {
-                self.address = await getMKAdress()?.fullAddress ?? ""
+    enum ReminderTimeOption: Int, CaseIterable, Identifiable {
+        case before5min = 5
+        case before10min = 10
+        case before15min = 15
+        case atTheEnd = 0
+        case custom = -999
+
+        var id: Self { self }
+
+        var label: String {
+            switch self {
+            case .before5min: return "5 minutes before"
+            case .before10min: return "10 minutes before"
+            case .before15min: return "15 minutes before"
+            case .atTheEnd: return "At the end"
+            case .custom: return "Custom"
             }
-        }
-    }
-
-    func getMKAdress() async -> MKAddress? {
-        let location = CLLocation(latitude: latitude, longitude: longitude)
-
-        do {
-            guard let mapItem = try await MKReverseGeocodingRequest(location: location)?.mapItems.first else { return nil }
-
-            return mapItem.address
-        } catch {
-            // TODO: catch error
-            dump(error)
-            return nil
         }
     }
 }

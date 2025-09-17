@@ -1,8 +1,8 @@
 //
-//  NotificationManager.swift
+//  NotificaitonManager.swift
 //  WDIP
 //
-//  Created by Duy Anh Ngac on 8/9/25.
+//  Created by Duy Anh Ngac on 16/9/25.
 //
 
 import UserNotifications

@@ -2,7 +2,7 @@
 //  Feedback.swift
 //  WDIP
 //
-//  Created by Duy Anh Ngac on 3/9/25.
+//  Created by Duy Anh Ngac on 17/9/25.
 //
 
 import SwiftUI
@@ -15,8 +15,6 @@ struct Feedback: View {
             }
 
             Section("App") {
-//                ButtonExternalLink(title: "Twitter / X", link: Constants.APP_TWITTER_LINK)
-//                ButtonExternalLink(title: "Mastadon", link: Constants.TERMS_LINK)
                 ButtonExternalLink(title: "Send Email", link: "mailto:\(Constants.SUPPORT_EMAIL)")
             }
 
@@ -24,7 +22,7 @@ struct Feedback: View {
                 ButtonExternalLink(title: "Twitter / X", link: Constants.DEV_TWITTER_LINK)
                 ButtonExternalLink(title: "Mastadon", link: Constants.DEV_MASTADON_LINK)
             }
-            
+
             Section {
                 Text("I try to read every message, but not all will be receive the response.")
             }
@@ -32,8 +30,4 @@ struct Feedback: View {
         .navigationTitle("Send Feedback")
         .navigationBarTitleDisplayMode(.inline)
     }
-}
-
-#Preview {
-    Feedback()
 }

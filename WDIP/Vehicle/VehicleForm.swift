@@ -2,7 +2,7 @@
 //  VehicleForm.swift
 //  WDIP
 //
-//  Created by Duy Anh Ngac on 22/8/25.
+//  Created by Duy Anh Ngac on 13/9/25.
 //
 
 import SwiftData
@@ -13,6 +13,7 @@ struct VehicleForm: View {
     @Environment(\.modelContext) private var modelContext
 
     var vehicle: Vehicle? = nil
+    var onDelete: (() -> Void)? = nil
 
     @State private var name: String = ""
 
@@ -53,44 +54,34 @@ struct VehicleForm: View {
                 }
             }
             .sheetToolbar("Vehicle Info") {
-                toolbarContent
+                if vehicle != nil {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button("Delete", systemImage: "trash", role: .destructive) {
+                            isShowingDeleteAlert = true
+                        }
+                        .tint(.red)
+                    }
+                }
+
+                ToolbarSpacer(.fixed, placement: .topBarTrailing)
+
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Save", systemImage: "checkmark", role: .confirm, action: saveVehicle)
+                }
             }
             .alert("Are you sure?", isPresented: $isShowingDeleteAlert) {
                 Button("Cancel", role: .cancel) {}
-                Button("Delete", role: .destructive, action: delete)
+                Button("Delete", role: .destructive, action: deleteVehicle)
             }
             .onAppear {
-                onStart()
+                presetFormValues()
             }
         }
     }
 }
 
-#Preview {
-    VehicleForm(vehicle: StoreProvider.sampleVehicle)
-}
-
 extension VehicleForm {
-    @ToolbarContentBuilder
-    var toolbarContent: some ToolbarContent {
-        if vehicle != nil {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button("Delete", systemImage: "trash", role: .destructive, action: { isShowingDeleteAlert = true })
-                    .tint(.red)
-            }
-        }
-
-        ToolbarSpacer(.fixed, placement: .topBarTrailing)
-
-        ToolbarItem(placement: .topBarTrailing) {
-            Button("Save", systemImage: "checkmark", role: .confirm, action: save)
-                .buttonStyle(.glassProminent)
-        }
-    }
-}
-
-extension VehicleForm {
-    func onStart() {
+    func presetFormValues() {
         guard let vehicle else { return }
 
         name = vehicle.name
@@ -98,22 +89,27 @@ extension VehicleForm {
         selectedColor = PickerColor.color(from: vehicle.color)
     }
 
-    func save() {
+    func saveVehicle() {
         if let vehicle {
             vehicle.name = name
-            vehicle.icon = selectedIcon.rawValue
-            vehicle.color = selectedColor.rawValue
+            vehicle.icon = selectedIcon.iconString
+            vehicle.color = selectedColor.colorString
         } else {
-            let newVehicle = Vehicle(name: name, icon: selectedIcon.iconString, color: selectedColor.colorString)
+            let newVehicle = Vehicle()
+            newVehicle.name = name
+            newVehicle.icon = selectedIcon.iconString
+            newVehicle.color = selectedColor.colorString
+
             modelContext.insert(newVehicle)
         }
 
         dismiss()
     }
 
-    func delete() {
+    func deleteVehicle() {
         guard let vehicle else { return }
         modelContext.delete(vehicle)
+        onDelete?()
         dismiss()
     }
 }
