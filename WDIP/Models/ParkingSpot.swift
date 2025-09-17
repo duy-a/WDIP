@@ -36,7 +36,7 @@ final class ParkingSpot {
 
     var coordinateRegion: MKCoordinateRegion {
         MKCoordinateRegion(center: coordinates,
-                           span: .init(latitudeDelta: 0.02, longitudeDelta: 0.02))
+                           span: .init(latitudeDelta: 0.001, longitudeDelta: 0.001))
     }
 
     var notificationId: String {
