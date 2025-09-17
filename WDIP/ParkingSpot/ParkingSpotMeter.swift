@@ -17,7 +17,7 @@ struct ParkingSpotMeter: View {
     
     @State private var isEnabledReminder: Bool = false
     @State private var isShowingPermissionDeniedAlert: Bool = false
-    @State private var reminderOption: ParkingSpot.ReminderTimeOption = .before5min
+    @State private var reminderOption: ParkingSpot.ReminderTimeOption = .atTheEnd
     @State private var reminderTime: Date = .now
     
     @State private var timer: TimerManager = .init(endTime: .now)
@@ -41,13 +41,15 @@ struct ParkingSpotMeter: View {
     
     private var latestReminderDate: Date {
         if let timerEndTime = parkingSpot.timerEndTime {
-            return timerEndTime
-        } else {
             if timerEndTime > .now {
                 return timerEndTime
-            } else {
-                return .now
             }
+        }
+        
+        if timerEndTime > .now {
+            return timerEndTime
+        } else {
+            return .now
         }
     }
     
@@ -248,7 +250,7 @@ extension ParkingSpotMeter {
             if parkingSpot.reminderEndTime == parkingSpot.timerEndTime {
                 notificationBody = "Your parking meter has expired."
             } else {
-                notificationBody = "Your parking meter will expire on \(reminderTime.formatted(date: .abbreviated, time: .shortened))"
+                notificationBody = "Your parking meter will expire on \(timerEndTime.formatted(date: .abbreviated, time: .shortened))"
             }
         }
         
@@ -268,7 +270,7 @@ extension ParkingSpotMeter {
     
     private func cancelReminder() {
         isEnabledReminder = false
-        reminderOption = .before5min
+        reminderOption = .atTheEnd
         reminderTime = .now
         
         parkingSpot.reminderOption = nil
