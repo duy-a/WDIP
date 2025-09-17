@@ -129,7 +129,7 @@ extension ParkingMap {
         modelContext.insert(parkingSpot)
 
         Task.detached {
-            parkingSpot.address = await ParkingSpot.getAddressBy(coordinates: appleParkCoordinates)
+            parkingSpot.address = await LocationManager.getAddressBy(coordinates: parkingSpot.coordinates)
         }
     }
 

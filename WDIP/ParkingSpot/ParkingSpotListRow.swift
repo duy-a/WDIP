@@ -59,8 +59,7 @@ struct ParkingSpotListRow: View {
         }
         .task {
             if parkingSpot.address.isEmpty {
-                parkingSpot.address = await ParkingSpot.getAddressBy(latitude: parkingSpot.latitude,
-                                                                     longitude: parkingSpot.longitude)
+                parkingSpot.address = await LocationManager.getAddressBy(coordinates: parkingSpot.coordinates)
             }
         }
     }
