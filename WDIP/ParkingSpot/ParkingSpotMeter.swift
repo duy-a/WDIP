@@ -103,7 +103,7 @@ struct ParkingSpotMeter: View {
                         }
                         
                         LabeledContent {
-                            Text(timer.formatRemainingTime)
+                            Text(timer.formattedRemainingTime)
                         } label: {
                             Label("Remaining time", systemImage: "timer")
                         }

@@ -20,6 +20,7 @@ struct ParkingMap: View {
     @State private var isShowingSettings: Bool = false
 
     @State private var isShowingParkingMeter: Bool = false
+    @State private var timer: TimerManager = .init(endTime: .now)
 
     let appleParkCoordinates: CLLocationCoordinate2D = .init(latitude: 37.33478414571969, longitude: -122.00894818929088)
 
@@ -38,8 +39,17 @@ struct ParkingMap: View {
             }
             .onAppear {
                 locationManager.requestWhenInUseAuthorization()
+
                 if trackingVehicle == nil {
                     isShowingVehicleList = true
+                }
+            }
+            .onChange(of: trackingVehicle?.currentParkingSpot?.timerEndTime) {
+                if let timerEndTime = trackingVehicle?.currentParkingSpot?.timerEndTime {
+                    timer.endTime = timerEndTime
+                    timer.start()
+                } else {
+                    timer.stop()
                 }
             }
             .toolbar {
@@ -88,7 +98,7 @@ extension ParkingMap {
 extension ParkingMap {
     @ToolbarContentBuilder
     var parkedAction: some ToolbarContent {
-        if let trackingVehicle {
+        if let trackingVehicle, trackingVehicle.isParked {
             ToolbarItem(placement: .bottomBar) {
                 Button("Center on parked location", systemImage: trackingVehicle.icon, action: {})
                     .tint(trackingVehicle.uiColor)
@@ -100,11 +110,18 @@ extension ParkingMap {
                 Button {
                     isShowingParkingMeter = true
                 } label: {
-                    Label("Set meter timer & reminder", systemImage: "powermeter")
+                    if timer.remainingTime > 0 {
+                        HStack {
+                            Image(systemName: "powermeter")
+                            Text(timer.formattedRemainingTime)
+                        }
+                    } else {
+                        Label("Set meter timer & reminder", systemImage: "powermeter")
+                    }
                 }
             }
 
-        } else {
+        } else if trackingVehicle == nil {
             ToolbarItem(placement: .bottomBar) {
                 Button("Track a vehicle") {
                     isShowingVehicleList = true

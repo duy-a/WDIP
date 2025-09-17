@@ -19,7 +19,7 @@ class TimerManager {
         self.endTime = endTime
     }
 
-    var formatRemainingTime: String {
+    var formattedRemainingTime: String {
         let totalSeconds = max(Int(remainingTime), 0)
         let days = totalSeconds / 86400
         let hours = (totalSeconds % 86400) / 3600
@@ -55,6 +55,7 @@ class TimerManager {
     }
 
     func stop() {
+        remainingTime = 0
         task?.cancel()
         task = nil
     }
