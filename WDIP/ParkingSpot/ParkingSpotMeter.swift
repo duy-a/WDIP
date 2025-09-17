@@ -229,6 +229,7 @@ extension ParkingSpotMeter {
             if !notificationManager.isAuthorized {
                 isShowingPermissionDeniedAlert = true
                 parkingSpot.reminderEndTime = nil
+                isEnabledReminder = false
             }
         }
     }
