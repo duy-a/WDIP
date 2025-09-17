@@ -82,6 +82,9 @@ struct ParkingSpotForm: View {
                     parkingSpot.address = await LocationManager.getAddressBy(coordinates: parkingSpot.coordinates)
                 }
             }
+            .onAppear {
+                mapCameraPosition = .region(parkingSpot.coordinateRegion)
+            }
             .sheetToolbar("Parking Info") {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Delete", systemImage: "trash", action: { isShowingDeleteAlert = true })

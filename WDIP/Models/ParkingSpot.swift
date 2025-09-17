@@ -34,6 +34,11 @@ final class ParkingSpot {
         CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
     }
 
+    var coordinateRegion: MKCoordinateRegion {
+        MKCoordinateRegion(center: coordinates,
+                           span: .init(latitudeDelta: 0.02, longitudeDelta: 0.02))
+    }
+
     var notificationId: String {
         guard let timerEndTime else { return "" }
 
