@@ -240,27 +240,7 @@ extension ParkingSpotMeter {
         parkingSpot.reminderEndTime = calculatedReminderTime
         parkingSpot.reminderOption = reminderOption.rawValue
         
-        var notificationBody = ""
-        
-        switch reminderOption {
-        case .before5min, .before10min, .before15min:
-            notificationBody = "Your parking meter will expire in \(reminderOption.rawValue) minutes."
-        case .atTheEnd:
-            notificationBody = "Your parking meter has expired."
-        case .custom:
-            if parkingSpot.reminderEndTime == parkingSpot.timerEndTime {
-                notificationBody = "Your parking meter has expired."
-            } else {
-                notificationBody = "Your parking meter will expire on \(timerEndTime.formatted(date: .abbreviated, time: .shortened))"
-            }
-        }
-        
-        Task {
-            await notificationManager.scheduleNotification(id: parkingSpot.notificationId,
-                                                           title: parkingSpot.vehicle?.name ?? "Your vehicle",
-                                                           body: notificationBody,
-                                                           date: calculatedReminderTime)
-        }
+        parkingSpot.scheduleNotificationReminder()
     }
     
     private func checkIfNotificationDelivered() {
