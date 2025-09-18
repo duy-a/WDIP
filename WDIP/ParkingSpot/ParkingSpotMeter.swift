@@ -153,6 +153,20 @@ struct ParkingSpotMeter: View {
                             .foregroundStyle(.red)
                     }
                 }
+                
+                Text("\(parkingSpot.reminderEndTime)")
+                
+                Button("Show Notifications") {
+                    UNUserNotificationCenter.current().getPendingNotificationRequests { requests in
+                        for request in requests {
+                            print("⏰ Pending notification:")
+                            print("ID: \(request.identifier)")
+                            print("Title: \(request.content.title)")
+                            print("Body: \(request.content.body)")
+                            print("Trigger: \(String(describing: request.trigger))")
+                        }
+                    }
+                }
             }
             .onAppear {
                 setInitialsValues()
@@ -175,6 +189,11 @@ struct ParkingSpotMeter: View {
             } message: {
                 Text("Please enable notifications in Settings to recieve reminders")
             }
+            .onChange(of: parkingSpot.timerEndTime) {
+                if let timerEndTime = parkingSpot.timerEndTime {
+                    timer.endTime = timerEndTime
+                }
+            }
         }
     }
 }
@@ -185,6 +204,7 @@ extension ParkingSpotMeter {
             self.timerEndTime = timerEndTime
             timer.endTime = timerEndTime
             timer.onCompletion = resetMeter
+            timer.onTick = checkIfNotificationDelivered
             timer.start()
         }
         
@@ -257,7 +277,7 @@ extension ParkingSpotMeter {
         parkingSpot.reminderOption = nil
         parkingSpot.reminderEndTime = nil
         
-        notificationManager.cancelNotification(id: parkingSpot.notificationId)
+        parkingSpot.cancelNotificationReminder()
     }
     
     private func openAppSettings() {

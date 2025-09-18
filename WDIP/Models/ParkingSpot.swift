@@ -76,6 +76,9 @@ extension ParkingSpot {
     func scheduleNotificationReminder() {
         guard let reminderOption, let reminderEndTime, let timerEndTime else { return }
 
+        print("Scheduling - \(notificationId)")
+        print(reminderEndTime)
+
         var notificationBody = ""
         let option: ReminderTimeOption = .init(rawValue: reminderOption)!
 
@@ -98,5 +101,9 @@ extension ParkingSpot {
                                                                   body: notificationBody,
                                                                   date: reminderEndTime)
         }
+    }
+
+    func cancelNotificationReminder() {
+        NotificationManager.shared.cancelNotification(id: notificationId)
     }
 }

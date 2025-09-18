@@ -10,6 +10,8 @@ import SwiftUI
 
 @main
 struct WDIPApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    
     @State private var locationManager: LocationManager = .shared
     @State private var notificationManager: NotificationManager = .shared
 

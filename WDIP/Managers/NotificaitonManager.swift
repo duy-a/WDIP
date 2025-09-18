@@ -56,7 +56,7 @@ final class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
         do {
             try await UNUserNotificationCenter.current().add(request)
         } catch {
-            // TODO:
+            print(error.localizedDescription)
         }
     }
 
