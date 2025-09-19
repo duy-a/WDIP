@@ -19,7 +19,7 @@ struct ParkingSpotListFiltered<Content: View>: View {
          searchText: String,
          @ViewBuilder content: @escaping (ParkingSpot) -> Content)
     {
-        let vehicleIds = vehicles.map { $0.id }
+        let vehicleIds = vehicles.map { $0.uuid }
 
         let startBeforeEnd = #Predicate<ParkingSpot> { spot in
             spot.parkingStartTime <= endDate
@@ -33,7 +33,7 @@ struct ParkingSpotListFiltered<Content: View>: View {
         }
         let inVehicles = #Predicate<ParkingSpot> { spot in
             if let vehicle = spot.vehicle {
-                vehicleIds.contains(vehicle.id)
+                vehicleIds.contains(vehicle.uuid)
             } else {
                 false
             }
