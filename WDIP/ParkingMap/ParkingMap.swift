@@ -16,7 +16,7 @@ struct ParkingMap: View {
     @State private var trackingVehicle: Vehicle? = nil
 
     @State private var mapCameraPosition: MapCameraPosition = .userLocation(fallback: .automatic)
-    @State private var mapCenterCoordinates: CLLocationCoordinate2D? = nil
+    @State private var currentVisibleRegion: MKCoordinateRegion?
 
     @State private var isShowingVehicleList: Bool = false
     @State private var isShowingParkingHistory: Bool = false
@@ -26,7 +26,6 @@ struct ParkingMap: View {
 
     @State private var timer: TimerManager = .init(endTime: .now)
 
-    let appleParkCoordinates: CLLocationCoordinate2D = .init(latitude: 37.33478414571969, longitude: -122.00894818929088)
     @State private var markerHeight: CGFloat = 0
 
     var body: some View {
@@ -44,7 +43,13 @@ struct ParkingMap: View {
                 }
             }
             .onMapCameraChange {
-                mapCenterCoordinates = $0.camera.centerCoordinate
+                currentVisibleRegion = MKCoordinateRegion(
+                    center: $0.camera.centerCoordinate,
+                    span: MKCoordinateSpan(
+                        latitudeDelta: $0.region.span.latitudeDelta,
+                        longitudeDelta: $0.region.span.longitudeDelta
+                    )
+                )
             }
             .mapControls {
                 MapUserLocationButton()
@@ -181,9 +186,19 @@ extension ParkingMap {
 
 extension ParkingMap {
     private func park() {
-        guard let trackingVehicle, let mapCenterCoordinates else { return }
+        let centerCoordinate: CLLocationCoordinate2D? = {
+            if let region = currentVisibleRegion {
+                return region.center
+            } else if let userLocation = locationManager.currentLocation {
+                return userLocation.coordinate
+            } else {
+                return nil
+            }
+        }()
 
-        let parkingSpot = ParkingSpot(coordinates: mapCenterCoordinates)
+        guard let trackingVehicle, let centerCoordinate else { return }
+
+        let parkingSpot = ParkingSpot(coordinates: centerCoordinate)
 
         trackingVehicle.parkingSpots?.append(parkingSpot)
         trackingVehicle.isParked = true
