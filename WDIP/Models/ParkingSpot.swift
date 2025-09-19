@@ -19,7 +19,7 @@ final class ParkingSpot {
     var address: String = ""
     var timerEndTime: Date?
     var reminderOption: Int?
-    var reminderEndTime: Date?
+    var reminderTime: Date?
     var createdAt: Date = Date.now
     var notes: String = ""
 
@@ -74,7 +74,7 @@ extension ParkingSpot {
 
 extension ParkingSpot {
     func scheduleNotificationReminder() {
-        guard let reminderOption, let reminderEndTime, let timerEndTime else { return }
+        guard let reminderOption, let reminderTime, let timerEndTime else { return }
 
         var notificationBody = ""
         let option: ReminderTimeOption = .init(rawValue: reminderOption)!
@@ -85,7 +85,7 @@ extension ParkingSpot {
         case .atTheEnd:
             notificationBody = "Your parking meter has expired."
         case .custom:
-            if reminderEndTime == timerEndTime {
+            if reminderTime == timerEndTime {
                 notificationBody = "Your parking meter has expired."
             } else {
                 notificationBody = "Your parking meter will expire on \(timerEndTime.formatted(date: .abbreviated, time: .shortened))"
@@ -96,7 +96,7 @@ extension ParkingSpot {
             await NotificationManager.shared.scheduleNotification(id: notificationId,
                                                                   title: vehicle?.name ?? "Your vehicle",
                                                                   body: notificationBody,
-                                                                  date: reminderEndTime)
+                                                                  date: reminderTime)
         }
     }
 

@@ -131,16 +131,16 @@ struct ParkingSpotMeter: View {
                         } label: {
                             Label("Time", systemImage: "clock.badge.exclamationmark")
                         }
-                        .disabled(parkingSpot.reminderEndTime != nil)
+                        .disabled(parkingSpot.reminderTime != nil)
                         
                         if reminderOption == .custom {
                             DatePicker(selection: $reminderTime, in: .now ... latestReminderDate) {
                                 Label("", systemImage: "calendar")
                             }
-                            .disabled(parkingSpot.reminderEndTime != nil)
+                            .disabled(parkingSpot.reminderTime != nil)
                         }
                         
-                        if parkingSpot.timerEndTime != nil && parkingSpot.reminderEndTime == nil {
+                        if parkingSpot.timerEndTime != nil && parkingSpot.reminderTime == nil {
                             Button("Set reminder", systemImage: "alarm", action: scheduleReminder)
                                 .disabled(isEnabledReminder && calculatedReminderTime < .now)
                         }
@@ -194,7 +194,7 @@ extension ParkingSpotMeter {
             timer.start()
         }
         
-        if let reminderTime = parkingSpot.reminderEndTime, let reminderOption = parkingSpot.reminderOption {
+        if let reminderTime = parkingSpot.reminderTime, let reminderOption = parkingSpot.reminderOption {
             isEnabledReminder = true
             self.reminderTime = reminderTime
             self.reminderOption = ParkingSpot.ReminderTimeOption(rawValue: reminderOption)!
@@ -234,7 +234,7 @@ extension ParkingSpotMeter {
 
             if !notificationManager.isAuthorized {
                 isShowingPermissionDeniedAlert = true
-                parkingSpot.reminderEndTime = nil
+                parkingSpot.reminderTime = nil
                 isEnabledReminder = false
             }
         }
@@ -243,14 +243,14 @@ extension ParkingSpotMeter {
     private func scheduleReminder() {
         guard isEnabledReminder, isValidReminderTime else { return }
         
-        parkingSpot.reminderEndTime = calculatedReminderTime
+        parkingSpot.reminderTime = calculatedReminderTime
         parkingSpot.reminderOption = reminderOption.rawValue
         
         parkingSpot.scheduleNotificationReminder()
     }
     
     private func checkIfNotificationDelivered() {
-        if let reminderTime = parkingSpot.reminderEndTime, reminderTime < .now {
+        if let reminderTime = parkingSpot.reminderTime, reminderTime < .now {
             cancelReminder()
         }
     }
@@ -261,7 +261,7 @@ extension ParkingSpotMeter {
         reminderTime = .now
         
         parkingSpot.reminderOption = nil
-        parkingSpot.reminderEndTime = nil
+        parkingSpot.reminderTime = nil
         
         parkingSpot.cancelNotificationReminder()
     }
