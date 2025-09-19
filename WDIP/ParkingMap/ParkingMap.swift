@@ -169,6 +169,12 @@ extension ParkingMap {
                 .controlSize(.large)
                 .tint(.primary)
             }
+        } else {
+            ToolbarItem(placement: .bottomBar) {
+                Text("This is here to prevent shifting when the vehicle is parked")
+                    .foregroundStyle(.clear)
+            }
+            .sharedBackgroundVisibility(.hidden)
         }
     }
 }
