@@ -11,7 +11,7 @@ import SwiftData
 
 @Model
 final class ParkingSpot {
-    var id: String = UUID().uuidString
+    var uuid: String = UUID().uuidString
     var latitude: Double = 0.0
     var longitude: Double = 0.0
     var parkingStartTime: Date = Date.now.roundedDownToMinute
@@ -69,5 +69,38 @@ extension ParkingSpot {
             case .custom: return "Custom"
             }
         }
+    }
+}
+
+extension ParkingSpot {
+    func scheduleNotificationReminder() {
+        guard let reminderOption, let reminderEndTime, let timerEndTime else { return }
+
+        var notificationBody = ""
+        let option: ReminderTimeOption = .init(rawValue: reminderOption)!
+
+        switch option {
+        case .before5min, .before10min, .before15min:
+            notificationBody = "Your parking meter will expire in \(option.rawValue) minutes."
+        case .atTheEnd:
+            notificationBody = "Your parking meter has expired."
+        case .custom:
+            if reminderEndTime == timerEndTime {
+                notificationBody = "Your parking meter has expired."
+            } else {
+                notificationBody = "Your parking meter will expire on \(timerEndTime.formatted(date: .abbreviated, time: .shortened))"
+            }
+        }
+
+        Task {
+            await NotificationManager.shared.scheduleNotification(id: notificationId,
+                                                                  title: vehicle?.name ?? "Your vehicle",
+                                                                  body: notificationBody,
+                                                                  date: reminderEndTime)
+        }
+    }
+
+    func cancelNotificationReminder() {
+        NotificationManager.shared.cancelNotification(id: notificationId)
     }
 }
