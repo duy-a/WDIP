@@ -153,20 +153,6 @@ struct ParkingSpotMeter: View {
                             .foregroundStyle(.red)
                     }
                 }
-                
-                Text("\(parkingSpot.reminderEndTime)")
-                
-                Button("Show Notifications") {
-                    UNUserNotificationCenter.current().getPendingNotificationRequests { requests in
-                        for request in requests {
-                            print("⏰ Pending notification:")
-                            print("ID: \(request.identifier)")
-                            print("Title: \(request.content.title)")
-                            print("Body: \(request.content.body)")
-                            print("Trigger: \(String(describing: request.trigger))")
-                        }
-                    }
-                }
             }
             .onAppear {
                 setInitialsValues()

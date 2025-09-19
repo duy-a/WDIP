@@ -11,7 +11,7 @@ import SwiftData
 
 @Model
 final class ParkingSpot {
-    var id: String = UUID().uuidString
+    var uuid: String = UUID().uuidString
     var latitude: Double = 0.0
     var longitude: Double = 0.0
     var parkingStartTime: Date = Date.now.roundedDownToMinute
@@ -75,9 +75,6 @@ extension ParkingSpot {
 extension ParkingSpot {
     func scheduleNotificationReminder() {
         guard let reminderOption, let reminderEndTime, let timerEndTime else { return }
-
-        print("Scheduling - \(notificationId)")
-        print(reminderEndTime)
 
         var notificationBody = ""
         let option: ReminderTimeOption = .init(rawValue: reminderOption)!

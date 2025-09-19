@@ -41,15 +41,15 @@ extension AppDelegate {
                 let context = StoreProvider.shared.modelContainer.mainContext
 
                 let spots = try context.fetch(FetchDescriptor<ParkingSpot>())
-                // TODO: find a way to update only the changed objects
 
+                /// will reschedule all the the spots, the operation is cheap and will keep in sync all devices
                 for spot in spots {
-                    print("🔄 Remote merge, updated reminderEndTime:", spot.reminderEndTime as Any)
                     spot.cancelNotificationReminder()
                     spot.scheduleNotificationReminder()
                 }
             } catch {
-                print("⚠️ Failed to process remote change:", error)
+                // TODO: perform correct catch
+                print(error.localizedDescription)
             }
         }
     }

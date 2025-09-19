@@ -11,7 +11,7 @@ import SwiftUI
 
 @Model
 final class Vehicle {
-    var id: String = UUID().uuidString
+    var uuid: String = UUID().uuidString
     var name: String = ""
     var icon: String = ""
     var color: String = ""
